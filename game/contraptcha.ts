@@ -280,7 +280,7 @@ declare let localforage: any;
         guess(hintWord);
     }
 
-    function restart() {
+    async function restart() {
         state.guessed.fill(false);
         hidden.fill(false);
         for (let wi = 0; wi < wordCt; wi++) {
@@ -288,6 +288,7 @@ declare let localforage: any;
             state.guessWords[wi] = Object.create(null);
         }
         lastGuess = null;
+        await saveState();
         drawImages();
         drawWordGuesses();
         setTimeout(() => winp.focus(), 0);
@@ -420,23 +421,25 @@ declare let localforage: any;
         if (!word.length)
             return;
 
-        if (word[0] === "/") {
-            // Commands
-            const cmd = word.slice(1).toLowerCase();
-            if (cmd === "restart")
-                restart();
-            else if (cmd === "newgame")
-                newGame();
-            else if (cmd === "hint")
-                hint();
-            else if (cmd === "help")
-                panel(helpPanel);
-            else if (cmd === "credits")
-                panel(creditsPanel);
-            return;
-        }
+        mainPromise = mainPromise.then(() => {
+            if (word[0] === "/") {
+                // Commands
+                const cmd = word.slice(1).toLowerCase();
+                if (cmd === "restart")
+                    return restart();
+                else if (cmd === "newgame")
+                    return newGame();
+                else if (cmd === "hint")
+                    return hint();
+                else if (cmd === "help")
+                    panel(helpPanel);
+                else if (cmd === "credits")
+                    panel(creditsPanel);
+                return;
+            }
 
-        mainPromise = mainPromise.then(() => guess(word));
+            return guess(word);
+        });
     };
 
     winp.onkeyup = ev => {
