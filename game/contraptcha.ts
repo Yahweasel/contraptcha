@@ -14,9 +14,14 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+declare let localforage: any;
+
 (async function() {
     const gebi = document.getElementById.bind(document);
     const dce = document.createElement.bind(document);
+    const lf = localforage.createInstance({
+        name: "contraptcha"
+    });
 
     const imageCt = 4;
     const wordCt = 6;
@@ -95,10 +100,12 @@
     while (guessWords.length < wordCt)
         guessWords.push(Object.create(null));
 
+    let lastGuess: [number, [string, number]] | null = null;
+
     const similarity: Record<string, Record<string, number[]>> =
         Object.create(null);
 
-    let lastGuess: [number, [string, number]] | null = null;
+    let hintFiles: Record<number, [string, number]> = {};
 
     function panel(to: HTMLElement | null) {
         panelBox3.innerHTML = "";
@@ -203,6 +210,33 @@
         drawWordGuesses(true);
     }
 
+    async function hint() {
+        let wi = Math.floor(Math.random() * wordCt);
+        if (lastGuess)
+            wi = lastGuess[0];
+        if (!hintFiles[wi])
+            hintFiles[wi] = await (await fetch(`assets/${seed}/w${wi}-top.json`)).json();
+
+        // Choose a random word to use as hint
+        let hintWords = Object.keys(hintFiles[wi]);
+        let hintWord = "";
+        while (true) {
+            if (!hintWords.length)
+                break;
+            const idx = Math.floor(Math.random() * hintWords.length);
+            hintWord = hintWords[idx];
+            if (guessWords[hintWord]) {
+                hintWords.splice(idx, 1);
+                delete hintFiles[wi][hintWord];
+            } else break;
+        }
+        if (!hintWord) {
+            message("I've run out of hint words :(");
+            return;
+        }
+        guess(hintWord);
+    }
+
     function restart() {
         guessed.fill(false);
         hidden.fill(false);
@@ -229,18 +263,25 @@
     drawImages();
     drawWordGuesses();
     mainBox.style.display = "";
-    panel(null);
     panelBox1.onclick = () => panel(null);
     window.addEventListener("keydown", ev => {
         if (ev.key === "Escape" || ev.key === "Enter")
             panel(null);
     });
-    setTimeout(() => winp.focus(), 0);
+
+    // First-time help
+    if (!(await lf.getItem("seen-help"))) {
+        panel(helpPanel);
+        await lf.setItem("seen-help", true);
+    } else {
+        panel(null);
+    }
 
     // Set up the buttons
-    gebi("helpbtn").onclick = () => panel(helpPanel);
     gebi("restartbtn").onclick = restart;
     gebi("newbtn").onclick = newGame;
+    gebi("hintbtn").onclick = hint;
+    gebi("helpbtn").onclick = () => panel(helpPanel);
 
     // Function to make a guess
     async function guess(word: string) {
@@ -333,12 +374,14 @@
         if (word[0] === "/") {
             // Commands
             const cmd = word.slice(1).toLowerCase();
-            if (cmd === "help")
-                panel(helpPanel);
-            else if (cmd === "restart")
+            if (cmd === "restart")
                 restart();
             else if (cmd === "newgame")
                 newGame();
+            else if (cmd === "hint")
+                hint();
+            else if (cmd === "help")
+                panel(helpPanel);
             return;
         }
 
