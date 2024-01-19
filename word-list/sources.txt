@@ -1,0 +1,8 @@
+COMMON.TXT is from the Moby project, described here:
+https://en.wikipedia.org/wiki/Moby_Project
+
+google-10000-english-no-swears.txt is from here:
+https://github.com/first20hours/google-10000-english
+
+nounlist.csv is from here:
+https://www.kaggle.com/datasets/leite0407/list-of-nouns/

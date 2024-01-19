@@ -1,0 +1,25 @@
+{
+  "name": "contraptcha",
+  "version": "0.0.1",
+  "description": "An AI-based word game inspired by CAPTCHAs and Wordle",
+  "main": "-",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yahweasel/contraptcha.git"
+  },
+  "keywords": [
+    "word",
+    "game",
+    "wordle",
+    "captcha"
+  ],
+  "author": "Yahweasel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Yahweasel/contraptcha/issues"
+  },
+  "homepage": "https://github.com/Yahweasel/contraptcha#readme"
+}

@@ -1,0 +1,52 @@
+<!doctype html>
+<!--
+ * Copyright (c) 2024 Yahweasel
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+<html>
+    <head>
+        <meta charset="utf8" />
+        <title>Contraptcha</title>
+        <link rel="stylesheet" href="contraptcha.css" />
+    </head>
+    <body>
+        <div id="main" style="display: none">
+            <div class="row">
+                <div class="imgbox" id="img1"></div>
+                <div class="imgbox" id="img2"></div>
+            </div>
+            <div class="row">
+                <div class="imgbox" id="img3"></div>
+                <div class="imgbox" id="img4"></div>
+            </div>
+            <div class="row wordguessrow">
+                <div class="wordguess" id="wg1"></div>
+                <div class="wordguess" id="wg2"></div>
+                <div class="wordguess" id="wg3"></div>
+                <div class="wordguess" id="wg4"></div>
+                <div class="wordguess" id="wg5"></div>
+                <div class="wordguess" id="wg6"></div>
+            </div>
+            <div class="row">
+                <input type="text" id="wordinput" />
+            </div>
+        </div>
+
+        <div id="loading">
+            Loading...
+        </div>
+
+        <script type="text/javascript" src="contraptcha.js?v=2"></script>
+    </body>
+</html>
