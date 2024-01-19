@@ -15,10 +15,6 @@ body {
     padding: 1em;
 }
 
-#loading {
-    font-size: 2em;
-}
-
 .row {
     display: flex;
     flex-direction: row;
@@ -48,11 +44,102 @@ body {
 
 #wordinput {
     width: 100%;
-    margin-top: 0.2em;
+    margin: 0.2em 0 0.2em 0;
     background-color: #111;
     color: #aaa;
     border: 1px solid #fff;
     text-align: center;
     font-size: 2em;
     text-transform: uppercase;
+}
+
+.mainbtn {
+    flex: 1;
+    appearance: none;
+    background-color: #339;
+    border: 2px solid #999;
+    color: #999;
+    font-size: 1.5em;
+    text-transform: uppercase;
+}
+
+.mainbtn:hover {
+    background-color: #44a;
+}
+
+.mainbtn:active {
+    background-color: #339;
+}
+
+#panelguard {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgb(0 0 0 / 85%);
+}
+
+#panelbox1 {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#panelbox2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: calc(min(100% - 2em, 40em));
+}
+
+#panelbox3 {
+    max-height: calc(100% - 2em);
+}
+
+.panelspacer {
+    max-width: auto;
+    max-height: auto;
+    width: auto;
+    height: auto;
+    flex: auto;
+}
+
+.panel {
+    position: relative;
+    max-height: 100%;
+    overflow-y: auto;
+    background-color: #222;
+    border: 2px solid #888;
+    border-radius: 0.25em;
+    padding: 0.5em;
+    box-shadow: 6px 6px #000;
+}
+
+.panel p {
+    font-size: 1.2em;
+    text-align: justify;
+}
+
+button.close {
+    position: absolute;
+    right: 0.1em;
+    top: 0.1em;
+    appearance: none;
+    background: none;
+    border: none;
+    color: #888;
+}
+
+button.close:hover {
+    color: #aaa;
+}
+
+button.close:active {
+    color: #fff;
 }

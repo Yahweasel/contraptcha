@@ -41,12 +41,78 @@
             <div class="row">
                 <input type="text" id="wordinput" />
             </div>
+            <div class="row">
+                <button id="restartbtn" class="mainbtn">Restart game</button>
+                <button id="newbtn" class="mainbtn">New game</button>
+                <button id="helpbtn" class="mainbtn">Help</button>
+            </div>
         </div>
 
-        <div id="loading">
-            Loading...
+        <div id="panelguard"></div>
+
+        <div id="panelbox1">
+            <div id="panelbox2">
+                <div id="panelbox3">
+                    <div id="loadingpanel" class="panel">
+                        <h2>Loading...</h2>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <script type="text/javascript" src="contraptcha.js?v=2"></script>
+        <div style="display: none;">
+            <div id="helppanel" class="panel">
+                <button class="close">x</button>
+
+                <h2>What is this???</h2>
+
+                <p>This is Contraptcha, the word game no one asked for!</p>
+
+                <p>
+                    Contraptcha is a word puzzle inspired by AI-generated art
+                    and CAPTCHAs. In this game, you're presented with four
+                    images, each drawn by AI from the same prompt. The prompt is
+                    simply a sequence of English nouns. Every time you find one
+                    of the words, that's removed from the prompt, so you see the
+                    images generated with one word less.
+                </p>
+
+                <p>
+                    Your goal is, of course, to find every word. If you enter a
+                    word that's not part of the prompt, a “semantic similarity”
+                    will be shown for whichever word it's most similar to. The
+                    semantic similarity is simply a number describing the
+                    similarity in concept between the word you entered and the
+                    word that's in the prompt. Higher is more similar, and the
+                    range is from 0–99, though it's quite rare to go above 70.
+                    For instance, if the word is “space” and you enter “stars”,
+                    you'll get a high semantic similarity, whereas if the word
+                    is “pig” and you enter “stars”, you'll get a low semantic
+                    similarity.
+                </p>
+
+                <p>
+                    If you're stumped and want more hints, you can show how the
+                    images would be generated without any of the words you don't
+                    know by clicking the word's guess box (the question marks),
+                    or by entering a number from 1–6. Remember, what you're
+                    doing is <em>removing</em> a word, so if you remove word 4
+                    and the stars disappear from the image, that means word 4
+                    probably <em>is</em> star or stars!
+                </p>
+
+                <p>
+                    There's currently no scoring system, but basically, as few
+                    guesses as possible is what you want, right?
+                </p>
+            </div>
+
+            <div id="messagepanel" class="panel">
+                <button class="close">x</button>
+                <p id="messagepanelmessage"></p>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="contraptcha.js?v=4"></script>
     </body>
 </html>

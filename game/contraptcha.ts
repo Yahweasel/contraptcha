@@ -23,7 +23,9 @@
 
     // Get all our references
     const mainBox = gebi("main");
-    const loadingBox = gebi("loading");
+    const panelGuard = gebi("panelguard");
+    const panelBox1 = gebi("panelbox1");
+    const panelBox3 = gebi("panelbox3");
     const imgBoxes: HTMLElement[] = [];
     for (let i = 0; i < imageCt; i++)
         imgBoxes.push(gebi(`img${i+1}`));
@@ -31,6 +33,11 @@
     for (let i = 0; i < wordCt; i++)
         wgBoxes.push(gebi(`wg${i+1}`));
     const winp: HTMLInputElement = gebi("wordinput");
+
+    const loadingPanel = gebi("loadingpanel");
+    const helpPanel = gebi("helppanel");
+    const msgPanel = gebi("messagepanel");
+    const msgPanelMsg = gebi("messagepanelmessage");
 
     let mainPromise: Promise<unknown> = Promise.all([]);
 
@@ -63,7 +70,7 @@
             return +paramSeed;
         }
 
-        const seeds = await (await fetch("assets/seeds.json")).json();
+        const seeds = await (await fetch("assets/seeds.json?v=4")).json();
         const seed = seeds[Math.floor(Math.random() * seeds.length)];
 
         url.searchParams.set("s", "" + seed);
@@ -90,6 +97,30 @@
 
     const similarity: Record<string, Record<string, number[]>> =
         Object.create(null);
+
+    let lastGuess: [number, [string, number]] | null = null;
+
+    function panel(to: HTMLElement | null) {
+        panelBox3.innerHTML = "";
+        if (to) {
+            panelBox3.appendChild(to);
+            panelGuard.style.display = "";
+            panelBox1.style.display = "";
+            setTimeout(() => {
+                winp.blur();
+                to.focus();
+            }, 0);
+        } else {
+            panelGuard.style.display = "none";
+            panelBox1.style.display = "none";
+            setTimeout(() => winp.focus(), 0);
+        }
+    }
+
+    function message(msg: string) {
+        msgPanelMsg.innerHTML = msg;
+        panel(msgPanel);
+    }
 
     function drawImages() {
         let gidx = 0;
@@ -145,6 +176,16 @@
                         "0%)";
                 }
             }
+
+            const lastRow = wgCol[4];
+            if (lastGuess && lastGuess[0] === wi) {
+                lastRow.innerText = `${lastGuess[1][0].toUpperCase()}: ${Math.round(lastGuess[1][1]*100)}`;
+                lastRow.style.backgroundColor = "#999";
+                lastRow.style.color = "#000";
+            } else {
+                lastRow.innerHTML = "&nbsp;";
+                lastRow.style.backgroundColor = "";
+            }
         }
     }
 
@@ -162,6 +203,24 @@
         drawWordGuesses(true);
     }
 
+    function restart() {
+        guessed.fill(false);
+        hidden.fill(false);
+        guessVals.fill([]);
+        for (let i = 0; i < guessWords.length; i++)
+            guessWords[i] = Object.create(null);
+        lastGuess = null;
+        drawImages();
+        drawWordGuesses();
+        setTimeout(() => winp.focus(), 0);
+    }
+
+    function newGame() {
+        const url = new URL(document.location.href);
+        url.search = "";
+        document.location.href = url.toString();
+    }
+
     // Set up the ability to hide words
     for (let wi = 0; wi < wordCt; wi++)
         wgRows[wi][0].onclick = () => hideWord(wi);
@@ -169,9 +228,19 @@
     // Draw the initial state of the board
     drawImages();
     drawWordGuesses();
-    loadingBox.style.display = "none";
     mainBox.style.display = "";
-    winp.focus();
+    panel(null);
+    panelBox1.onclick = () => panel(null);
+    window.addEventListener("keydown", ev => {
+        if (ev.key === "Escape" || ev.key === "Enter")
+            panel(null);
+    });
+    setTimeout(() => winp.focus(), 0);
+
+    // Set up the buttons
+    gebi("helpbtn").onclick = () => panel(helpPanel);
+    gebi("restartbtn").onclick = restart;
+    gebi("newbtn").onclick = newGame;
 
     // Function to make a guess
     async function guess(word: string) {
@@ -184,21 +253,19 @@
             }
             guessed[gotIt] = true;
             guessVals[gotIt] = [];
-            for (let wi = 0; wi < wordCt; wi++) {
-                const wb = wgRows[wi][4];
-                wb.style.backgroundColor = "";
-                wb.innerHTML = "&nbsp;";
-                hidden[wi] = false;
-            }
+            lastGuess = null;
+            hidden.fill(false);
             drawImages();
             drawWordGuesses();
             return;
         }
 
         // Check if it's a valid word at all
-        const first = word[0];
-        if (!/[a-z]/.test(first))
+        if (/[^a-z]/.test(word)) {
+            message("Invalid word! Hyphens, apostrophes, and other symbols are not allowed.");
             return;
+        }
+        const first = word[0];
 
         // Make sure we have this similarity file
         if (!similarity[first]) {
@@ -210,7 +277,7 @@
         const sword = similarity[first][word];
         if (!sword) {
             // No similarity, invalid word!
-            // FIXME: Feedback
+            message("Unrecognized word!");
             return;
         }
         let mostVal = -1;
@@ -225,28 +292,18 @@
         }
         mostVal = Math.max(mostVal, 0);
         if (mostIdx < 0)
-            return; // FIXME
-
-        // Don't repeat guesses
-        if (guessWords[mostIdx][word])
-            return; // FIXME
+            return;
 
         // Put it in place
-        for (let wi = 0; wi < wordCt; wi++) {
-            const wb = wgRows[wi][4];
-            if (wi === mostIdx) {
-                wb.style.backgroundColor = "#999";
-                wb.style.color = "#000";
-                wb.innerText = `${word.toUpperCase()}: ${Math.round(mostVal*100)}`;
-            } else {
-                wb.style.backgroundColor = "";
-                wb.innerHTML = "&nbsp;";
-            }
-        }
+        lastGuess = [mostIdx, [word, mostVal]];
         drawWordGuesses();
 
+        // Don't repeatedly add guesses to the list
+        if (guessWords[mostIdx][word])
+            return;
+
         // Add that to the guess-o-dex
-        guessVals[mostIdx].push([word, mostVal]);
+        guessVals[mostIdx].push(lastGuess[1]);
         guessVals[mostIdx].sort((x, y) => y[1] - x[1]);
         guessWords[mostIdx][word] = true;
     }
@@ -259,16 +316,36 @@
             hideWord(+ev.key - 1);
             return;
         }
+        if (ev.key === "Escape") {
+            panel(null);
+            return;
+        }
         if (ev.key !== "Enter")
             return;
+        ev.preventDefault();
+        ev.stopPropagation();
             
         const word = winp.value;
         winp.value = "";
+        if (!word.length)
+            return;
+
+        if (word[0] === "/") {
+            // Commands
+            const cmd = word.slice(1).toLowerCase();
+            if (cmd === "help")
+                panel(helpPanel);
+            else if (cmd === "restart")
+                restart();
+            else if (cmd === "newgame")
+                newGame();
+            return;
+        }
 
         mainPromise = mainPromise.then(() => guess(word));
     };
 
     winp.onkeyup = ev => {
-        winp.value = winp.value.replace(/[^A-Za-z]/g, "").toLowerCase();
+        winp.value = winp.value.replace(/[^A-Za-z\/]/g, "").toLowerCase();
     };
 })();
