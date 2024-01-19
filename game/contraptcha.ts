@@ -41,6 +41,7 @@ declare let localforage: any;
 
     const loadingPanel = gebi("loadingpanel");
     const helpPanel = gebi("helppanel");
+    const creditsPanel = gebi("creditspanel");
     const msgPanel = gebi("messagepanel");
     const msgPanelMsg = gebi("messagepanelmessage");
 
@@ -327,6 +328,7 @@ declare let localforage: any;
     gebi("newbtn").onclick = newGame;
     gebi("hintbtn").onclick = hint;
     gebi("helpbtn").onclick = () => panel(helpPanel);
+    gebi("creditsbtn").onclick = () => panel(creditsPanel);
 
     // Function to make a guess
     async function guess(word: string) {
@@ -429,6 +431,8 @@ declare let localforage: any;
                 hint();
             else if (cmd === "help")
                 panel(helpPanel);
+            else if (cmd === "credits")
+                panel(creditsPanel);
             return;
         }
 

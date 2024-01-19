@@ -8,6 +8,14 @@ body {
     font-family: 'Open Sans', sans-serif;
 }
 
+a {
+    color: #55a;
+}
+
+a:hover {
+    color: #66a;
+}
+
 #main {
     background-color: #111;
     max-width: 52em;
