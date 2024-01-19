@@ -67,45 +67,87 @@ declare let localforage: any;
         }
     }
 
-    // Choose a seed
-    const seed = await (async () => {
-        const url = new URL(document.location.href);
-        const paramSeed = url.searchParams.get("s");
-        if (paramSeed) {
-            return +paramSeed;
-        }
-
-        const seeds = await (await fetch("assets/seeds.json?v=4")).json();
-        const seed = seeds[Math.floor(Math.random() * seeds.length)];
-
-        url.searchParams.set("s", "" + seed);
-        window.history.pushState({}, `??? — ${seed}`, url.toString());
-        return seed;
-    })();
-    const words = await (await fetch(`assets/${seed}/w.json`)).json();
-
-    const guessed: boolean[] = [];
-    while (guessed.length < wordCt)
-        guessed.push(false);
+    // Game state
+    let state: {
+        guessed: boolean[],
+        guessVals: [string, number][][],
+        guessWords: Record<string, boolean>[]
+    } | null = null;
 
     const hidden: boolean[] = [];
     while (hidden.length < wordCt)
         hidden.push(false);
 
-    const guessVals: [string, number][][] = [];
-    while (guessVals.length < wordCt)
-        guessVals.push([]);
-
-    const guessWords: Record<string, boolean>[] = [];
-    while (guessWords.length < wordCt)
-        guessWords.push(Object.create(null));
-
     let lastGuess: [number, [string, number]] | null = null;
 
-    const similarity: Record<string, Record<string, number[]>> =
+    let seed = 0;
+    let words: string[] = [];
+    let similarity: Record<string, Record<string, number[]>> =
         Object.create(null);
-
     let hintFiles: Record<number, [string, number]> = {};
+    let beatEveryPuzzle = false;
+
+    async function loadState() {
+        state = await lf.getItem(`game-${seed}`);
+        if (!state) {
+            state = {
+                guessed: [],
+                guessVals: [],
+                guessWords: []
+            };
+        }
+
+        while (state.guessed.length < wordCt)
+            state.guessed.push(false);
+
+        while (state.guessVals.length < wordCt)
+            state.guessVals.push([]);
+
+        while (state.guessWords.length < wordCt)
+            state.guessWords.push(Object.create(null));
+    }
+
+    // Choose a seed
+    async function chooseSeed(ignoreURL = false) {
+        const url = new URL(document.location.href);
+        seed = -1;
+        if (!ignoreURL) {
+            const paramSeed = url.searchParams.get("s");
+            if (paramSeed) {
+                seed = +paramSeed;
+                await loadState();
+            }
+        }
+
+        // Choose a seed we haven't beaten yet
+        if (seed < 0) {
+            const seeds = await (await fetch("assets/seeds.json?v=4")).json();
+            do {
+                if (!seeds.length)
+                    break;
+                const idx = Math.floor(Math.random() * seeds.length);
+                seed = seeds[idx];
+                seeds.splice(idx, 1);
+                await loadState();
+            } while (state.guessed.indexOf(false) < 0);
+
+            if (state.guessed.indexOf(false) < 0)
+                beatEveryPuzzle = true;
+        }
+
+        url.searchParams.set("s", "" + seed);
+        window.history.pushState({}, `??? — ${seed}`, url.toString());
+
+        words = await (await fetch(`assets/${seed}/w.json`)).json();
+        similarity = Object.create(null);
+        hintFiles = {};
+    }
+
+    await chooseSeed();
+
+    async function saveState() {
+        await lf.setItem(`game-${seed}`, state);
+    }
 
     function panel(to: HTMLElement | null) {
         panelBox3.innerHTML = "";
@@ -132,7 +174,7 @@ declare let localforage: any;
     function drawImages() {
         let gidx = 0;
         for (let i = 0; i < wordCt; i++) {
-            if (!guessed[i] && !hidden[i])
+            if (!state.guessed[i] && !hidden[i])
                 gidx |= 1 << i;
         }
         if (gidx === 0)
@@ -147,7 +189,7 @@ declare let localforage: any;
     function drawWordGuesses(onlyWords?: boolean) {
         for (let wi = 0; wi < wordCt; wi++) {
             const wgCol = wgRows[wi];
-            if (guessed[wi]) {
+            if (state.guessed[wi]) {
                 wgCol[0].innerText = words[wi].toUpperCase();
                 wgCol[0].style.backgroundColor = "#050";
             } else {
@@ -161,7 +203,7 @@ declare let localforage: any;
                 continue;
 
 
-            const wGuesses = guessVals[wi];
+            const wGuesses = state.guessVals[wi];
             for (let ri = 0; ri < 3; ri++) {
                 const row = wgCol[ri+1];
                 if (ri >= wGuesses.length) {
@@ -197,7 +239,7 @@ declare let localforage: any;
     }
 
     function hideWord(toHide: number) {
-        if (guessed[toHide])
+        if (state.guessed[toHide])
             return;
         for (let wi = 0; wi < wordCt; wi++) {
             const wb = wgRows[wi][0];
@@ -225,7 +267,7 @@ declare let localforage: any;
                 break;
             const idx = Math.floor(Math.random() * hintWords.length);
             hintWord = hintWords[idx];
-            if (guessWords[hintWord]) {
+            if (state.guessWords[hintWord]) {
                 hintWords.splice(idx, 1);
                 delete hintFiles[wi][hintWord];
             } else break;
@@ -238,21 +280,22 @@ declare let localforage: any;
     }
 
     function restart() {
-        guessed.fill(false);
+        state.guessed.fill(false);
         hidden.fill(false);
-        guessVals.fill([]);
-        for (let i = 0; i < guessWords.length; i++)
-            guessWords[i] = Object.create(null);
+        for (let wi = 0; wi < wordCt; wi++) {
+            state.guessVals[wi] = [];
+            state.guessWords[wi] = Object.create(null);
+        }
         lastGuess = null;
         drawImages();
         drawWordGuesses();
         setTimeout(() => winp.focus(), 0);
     }
 
-    function newGame() {
-        const url = new URL(document.location.href);
-        url.search = "";
-        document.location.href = url.toString();
+    async function newGame() {
+        await chooseSeed(true);
+        await drawImages();
+        await drawWordGuesses();
     }
 
     // Set up the ability to hide words
@@ -269,8 +312,10 @@ declare let localforage: any;
             panel(null);
     });
 
-    // First-time help
-    if (!(await lf.getItem("seen-help"))) {
+    // Special circumstances
+    if (beatEveryPuzzle) {
+        message("Congratulations! You've beaten every puzzle currently in the game!");
+    } else if (!(await lf.getItem("seen-help"))) {
         panel(helpPanel);
         await lf.setItem("seen-help", true);
     } else {
@@ -288,16 +333,17 @@ declare let localforage: any;
         // First check if they just got it
         let gotIt = words.indexOf(word);
         if (gotIt >= 0) {
-            if (guessed[gotIt]) {
+            if (state.guessed[gotIt]) {
                 // No doubles!
                 return;
             }
-            guessed[gotIt] = true;
-            guessVals[gotIt] = [];
+            state.guessed[gotIt] = true;
+            state.guessVals[gotIt] = [];
             lastGuess = null;
             hidden.fill(false);
             drawImages();
             drawWordGuesses();
+            await saveState();
             return;
         }
 
@@ -324,7 +370,7 @@ declare let localforage: any;
         let mostVal = -1;
         let mostIdx = -1;
         for (let wi = 0; wi < wordCt; wi++) {
-            if (guessed[wi])
+            if (state.guessed[wi])
                 continue;
             if (sword[wi] > mostVal) {
                 mostVal = sword[wi];
@@ -340,13 +386,14 @@ declare let localforage: any;
         drawWordGuesses();
 
         // Don't repeatedly add guesses to the list
-        if (guessWords[mostIdx][word])
+        if (state.guessWords[mostIdx][word])
             return;
 
         // Add that to the guess-o-dex
-        guessVals[mostIdx].push(lastGuess[1]);
-        guessVals[mostIdx].sort((x, y) => y[1] - x[1]);
-        guessWords[mostIdx][word] = true;
+        state.guessVals[mostIdx].push(lastGuess[1]);
+        state.guessVals[mostIdx].sort((x, y) => y[1] - x[1]);
+        state.guessWords[mostIdx][word] = true;
+        await saveState();
     }
 
     // And play the game
