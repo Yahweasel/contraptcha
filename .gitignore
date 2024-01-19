@@ -2,6 +2,8 @@
 game/assets/
 game/contraptcha.js
 generate/out/
+node_modules/
+package-lock.json
 semantic-distance/distance
 word-list/COMMON.TXT
 word-list/google-10000-english-no-swears.txt
