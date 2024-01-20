@@ -38,6 +38,7 @@ async function main() {
         } catch (ex) {
             continue;
         }
+        let valid = true;
         validSeeds.push(seed);
 
         const outWords = `game/assets/${seed}/w.json`;
@@ -110,22 +111,26 @@ async function main() {
             await run(["semantic-distance/split.js", dj]);
 
             // Get the top 128 for hints
-            const distances = JSON.parse(
-                await fs.readFile(`${dj}.json`, "utf8"));
-            const wordPairs = [];
-            for (const word in distances)
-                wordPairs.push([word, distances[word]]);
-            wordPairs.sort((x, y) => y[1] - x[1]);
-            const top = {};
-            for (const wp of wordPairs.slice(0, 128))
-                top[wp[0]] = wp[1];
-            await fs.writeFile(`${dj}-top.json`, JSON.stringify(top));
+            try {
+                const distances = JSON.parse(
+                    await fs.readFile(`${dj}.json`, "utf8"));
+                const wordPairs = [];
+                for (const word in distances)
+                    wordPairs.push([word, distances[word]]);
+                wordPairs.sort((x, y) => y[1] - x[1]);
+                const top = {};
+                for (const wp of wordPairs.slice(0, 128))
+                    top[wp[0]] = wp[1];
+                await fs.writeFile(`${dj}-top.json`, JSON.stringify(top));
+            } catch (ex) {
+                valid = false;
+            }
         }
 
         // 5: Recombine distance lists
-        for (let cc = "a".charCodeAt(0); cc < "z".charCodeAt(0); cc++) {
+        for (let cc = "a".charCodeAt(0); cc <= "z".charCodeAt(0); cc++) {
             const c = String.fromCharCode(cc);
-            const distance = {};
+            const distance = Object.create(null);
             for (let wi = 0; wi < words.length; wi++) {
                 const word = words[wi];
                 const wd = JSON.parse(await fs.readFile(
@@ -134,10 +139,9 @@ async function main() {
                 if (word[0] === c)
                     wd[words[wi]] = 1;
                 for (const word in wd) {
-                    if (wi === 0)
-                        distance[word] = [wd[word]];
-                    else
-                        distance[word].push(wd[word]);
+                    if (!distance[word])
+                        distance[word] = Array(words.length).fill(0);
+                    distance[word][wi] = wd[word];
                 }
             }
             await fs.writeFile(
@@ -147,8 +151,23 @@ async function main() {
         }
 
         // 6: Write out the wordlist
-        await run(["cp", `generate/out/${seed}/${seed}.json`, outWords]);
+        if (valid)
+            await run(["cp", `generate/out/${seed}/${seed}.json`, outWords]);
+        else
+            console.error(`Seed ${seed} invalid!`);
     }
+
+    // Maybe exclude old seeds
+    try {
+        const excludeSeeds = JSON.parse(await fs.readFile(
+            `game/assets/exclude-seeds.json`, "utf8"
+        ));
+        for (const seed of excludeSeeds) {
+            const idx = validSeeds.indexOf(seed);
+            if (idx >= 0)
+                validSeeds.splice(idx, 1);
+        }
+    } catch (ex) {}
 
     // Write out the list of seeds
     await fs.writeFile("game/assets/seeds.json", JSON.stringify(validSeeds));

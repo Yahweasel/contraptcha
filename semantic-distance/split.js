@@ -19,7 +19,12 @@ const fs = require("fs/promises");
 
 async function main(args) {
     for (const arg of args) {
-        const dist = JSON.parse(await fs.readFile(`${arg}.json`, "utf8"));
+        let dist;
+        try {
+            dist = JSON.parse(await fs.readFile(`${arg}.json`, "utf8"));
+        } catch (ex) {
+            dist = {};
+        }
         const outp = {};
         for (let cc = "a".charCodeAt(0); cc <= "z".charCodeAt(0); cc++) {
             const c = String.fromCharCode(cc);
