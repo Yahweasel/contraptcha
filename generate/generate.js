@@ -15,6 +15,12 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/*
+ * NOTE:
+ * These defaults are set up for using ComfyUI from StableSwarmUI. It should be
+ * possible, but maybe not straightforward, to adapt it to ComfyUI directly.
+ */
+
 const fs = require("fs/promises");
 
 const backends = [
@@ -59,10 +65,11 @@ async function main(args) {
                 parts.push(args[i]);
             }
             //console.log(parts);
-            prompt[3].inputs.seed = seed + si;
             prompt[4].inputs.ckpt_name = models[si];
-            prompt[6].inputs.text = parts.join(", ");
             prompt[9].inputs.filename_prefix = `out/${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
+            prompt[10].inputs.noise_seed = seed + si;
+            prompt[101].inputs.text = parts.join(", ");
+            prompt[102].inputs.text = "text, watermark, nsfw, penis, vagina, breasts";
             const f = await fetch(backends[chidx % backends.length] + "/prompt", {
                 method: "POST",
                 headers: {"content-type": "application/json"},
