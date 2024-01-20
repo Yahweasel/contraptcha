@@ -122,7 +122,7 @@ declare let localforage: any;
 
         // Choose a seed we haven't beaten yet
         if (seed < 0) {
-            const seeds = await (await fetch("assets/seeds.json?v=4")).json();
+            const seeds = await (await fetch("assets/seeds.json?v=9")).json();
             do {
                 if (!seeds.length)
                     break;
@@ -295,6 +295,7 @@ declare let localforage: any;
     }
 
     async function newGame() {
+        lastGuess = null;
         await chooseSeed(true);
         await drawImages();
         await drawWordGuesses();
