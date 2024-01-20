@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/Yahweasel/contraptcha#readme",
   "dependencies": {
+    "canvas": "^2.11.2",
     "typescript": "^5.3.3"
   }
 }

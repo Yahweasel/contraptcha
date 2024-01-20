@@ -41,8 +41,9 @@ async function main() {
             continue;
         } catch (ex) {}
 
-        // 1: Make the assets directory
+        // 1: Make the assets directories
         await run(["mkdir", "-p", `game/assets/${seed}`]);
+        await run(["mkdir", "-p", `censor/out/${seed}`]);
 
         // 2: Convert the PNG files
         pngloop: for (let si = 0; ; si++) {
@@ -50,6 +51,7 @@ async function main() {
                 const pis = pi.toString(16).padStart(2, "0");
                 const fbase = `${seed+si}_${pi.toString(16).padStart(2, "0")}`;
                 const inFile = `generate/out/${seed+si}_${pis}_00001_.png`;
+                const cFile = `censor/out/${seed}/${si}_${pis}.png`;
                 const outFile = `game/assets/${seed}/${si}_${pis}.webp`;
 
                 // See if we're done
@@ -64,7 +66,11 @@ async function main() {
 
                 // Convert the file
                 console.log(outFile);
-                await run(["convert", inFile, "-quality", "85", outFile]);
+                await run([
+                    "node", "./censor/censor.js",
+                    inFile, cFile
+                ]);
+                await run(["convert", cFile, "-quality", "85", outFile]);
             }
         }
 
