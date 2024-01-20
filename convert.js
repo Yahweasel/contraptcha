@@ -30,9 +30,14 @@ async function run(cmd) {
 async function main() {
     const validSeeds = [];
     for (const file of await fs.readdir("generate/out")) {
-        if (!/\.json/.test(file))
-            continue;
         const seed = parseInt(file);
+        try {
+            await fs.access(
+                `generate/out/${seed}/${seed}.json`, fs.constants.F_OK
+            );
+        } catch (ex) {
+            continue;
+        }
         validSeeds.push(seed);
 
         const outWords = `game/assets/${seed}/w.json`;
@@ -50,7 +55,7 @@ async function main() {
             for (let pi = 1; ; pi++) {
                 const pis = pi.toString(16).padStart(2, "0");
                 const fbase = `${seed+si}_${pi.toString(16).padStart(2, "0")}`;
-                const inFile = `generate/out/${seed+si}_${pis}_00001_.png`;
+                const inFile = `generate/out/${seed}/${seed+si}_${pis}_00001_.png`;
                 const cFile = `censor/out/${seed}/${si}_${pis}.png`;
                 const outFile = `game/assets/${seed}/${si}_${pis}.webp`;
 
@@ -76,7 +81,7 @@ async function main() {
 
         // 3: Process all the words
         const words = JSON.parse(await fs.readFile(
-            `generate/out/${seed}.json`, "utf8"
+            `generate/out/${seed}/${seed}.json`, "utf8"
         ));
         for (let wi = 0; wi < words.length; wi++) {
             const word = words[wi];
@@ -142,7 +147,7 @@ async function main() {
         }
 
         // 6: Write out the wordlist
-        await run(["cp", `generate/out/${seed}.json`, outWords]);
+        await run(["cp", `generate/out/${seed}/${seed}.json`, outWords]);
     }
 
     // Write out the list of seeds

@@ -46,12 +46,13 @@ async function main(args) {
     do {
         seed = ~~(Math.random() * 2000000000);
         try {
-            await fs.access(`out/${seed}.json`, fs.constants.F_OK);
+            await fs.access(`out/${seed}/${seed}.json`, fs.constants.F_OK);
         } catch (ex) {
             break;
         }
     } while (true);
-    await fs.writeFile(`out/${seed}.json`, JSON.stringify(args));
+    await fs.mkdir(`out/${seed}`);
+    await fs.writeFile(`out/${seed}/${seed}.json`, JSON.stringify(args));
 
     const promptText = await fs.readFile("workflow_api.json", "utf8");
     const prompt = JSON.parse(promptText);
@@ -66,7 +67,7 @@ async function main(args) {
             }
             //console.log(parts);
             prompt[4].inputs.ckpt_name = models[si];
-            prompt[9].inputs.filename_prefix = `out/${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
+            prompt[9].inputs.filename_prefix = `out/${seed}/${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
             prompt[10].inputs.noise_seed = seed + si;
             prompt[101].inputs.text = parts.join(", ");
             prompt[102].inputs.text = "text, watermark, nsfw, penis, vagina, breasts";
@@ -87,7 +88,7 @@ async function main(args) {
             while (true) {
                 try {
                     await fs.access(
-                        `out/${seed+si}_${chidx.toString(16).padStart(2, "0")}_00001_.png`,
+                        `out/${seed}/${seed+si}_${chidx.toString(16).padStart(2, "0")}_00001_.png`,
                         fs.constants.F_OK
                     );
                     break;
