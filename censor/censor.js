@@ -32,8 +32,13 @@ async function main(args) {
     // For each OCR'd segment...
     for (const part of ocr) {
         const bbox = part[0];
+        const txt = part[1];
         const conf = part[2];
-        if (conf < 0.05)
+
+        // Skip bad or irrelevant
+        if (conf < 0.05 ||
+            txt.length < 3 ||
+            !/[a-zA-Z]/.test(txt))
             continue;
 
         // Turn the bounding box into a path
