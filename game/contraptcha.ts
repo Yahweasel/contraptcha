@@ -122,7 +122,7 @@ declare let localforage: any;
 
         // Choose a seed we haven't beaten yet
         if (seed < 0) {
-            const seeds = await (await fetch("assets/seeds.json?v=9")).json();
+            const seeds = await (await fetch("assets/seeds.json?v=c")).json();
             do {
                 if (!seeds.length)
                     break;
@@ -187,18 +187,39 @@ declare let localforage: any;
             imgs[i].src = `assets/${seed}/${i}_${gs}.webp`;
     }
 
+    function drawWordGuess(
+        el: HTMLElement, text: string, bgColor: string
+    ) {
+        el.innerText = text;
+        el.style.fontSize = "";
+        el.style.backgroundColor = bgColor;
+
+        (async function() {
+            let fontSize = 1;
+            while (true) {
+                await new Promise(res => setTimeout(res, 0));
+                if (fontSize <= 0.5 || el.scrollWidth <= el.clientWidth)
+                    break;
+                fontSize *= 0.875;
+                if (fontSize <= 0.5)
+                    fontSize = 0.5;
+                el.style.fontSize = `${fontSize}em`;
+            }
+        })();
+    }
+
     function drawWordGuesses(onlyWords?: boolean) {
         for (let wi = 0; wi < wordCt; wi++) {
             const wgCol = wgRows[wi];
             if (state.guessed[wi]) {
-                wgCol[0].innerText = words[wi].toUpperCase();
-                wgCol[0].style.backgroundColor = "#050";
+                drawWordGuess(
+                    wgCol[0], words[wi].toUpperCase(), "#050"
+                );
             } else {
-                wgCol[0].innerText = "??????";
-                if (hidden[wi])
-                    wgCol[0].style.backgroundColor = "#333";
-                else
-                    wgCol[0].style.backgroundColor = "#500";
+                drawWordGuess(
+                    wgCol[0], "??????",
+                    hidden[wi] ? "#333" : "#500"
+                );
             }
             if (onlyWords)
                 continue;
@@ -208,33 +229,37 @@ declare let localforage: any;
             for (let ri = 0; ri < 3; ri++) {
                 const row = wgCol[ri+1];
                 if (ri >= wGuesses.length) {
-                    row.innerHTML = "&nbsp;";
-                    row.style.backgroundColor = "";
+                    drawWordGuess(row, "", "");
                     continue;
                 }
                 const guess = wGuesses[ri];
-                row.innerText = `${guess[0].toUpperCase()}: ${Math.round(guess[1]*100)}`;
+
+                const text =
+                    `${guess[0].toUpperCase()}: ${Math.round(guess[1]*100)}`;
+                let bgColor: string;
                 const sim = Math.min(guess[1] / 0.8, 1);
                 if (sim > 0.5) {
-                    row.style.backgroundColor = "rgb(" +
+                    bgColor = "rgb(" +
                         (1 - sim) * 33 + "% " +
                         "33% 0%)";
                 } else {
-                    row.style.backgroundColor = "rgb(" +
+                    bgColor = "rgb(" +
                         "33% " +
                         sim * 33 + "% " +
                         "0%)";
                 }
+                drawWordGuess(row, text, bgColor);
             }
 
             const lastRow = wgCol[4];
             if (lastGuess && lastGuess[0] === wi) {
-                lastRow.innerText = `${lastGuess[1][0].toUpperCase()}: ${Math.round(lastGuess[1][1]*100)}`;
-                lastRow.style.backgroundColor = "#999";
-                lastRow.style.color = "#000";
+                drawWordGuess(
+                    lastRow,
+                    `${lastGuess[1][0].toUpperCase()}: ${Math.round(lastGuess[1][1]*100)}`,
+                    "#999"
+                );
             } else {
-                lastRow.innerHTML = "&nbsp;";
-                lastRow.style.backgroundColor = "";
+                drawWordGuess(lastRow, "", "");
             }
         }
     }
@@ -314,6 +339,7 @@ declare let localforage: any;
         if (ev.key === "Escape" || ev.key === "Enter")
             panel(null);
     });
+    window.addEventListener("resize", () => drawWordGuesses());
 
     // Special circumstances
     if (beatEveryPuzzle) {
