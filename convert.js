@@ -29,6 +29,12 @@ async function run(cmd) {
 }
 
 async function main() {
+    // Read in the dictionary (for limiting hints)
+    const dictionary = {};
+    for (const word of (await fs.readFile("word-list/COMMON.TXT", "utf8")).split("\r\n")) {
+        dictionary[word] = true;
+    }
+
     const validSeeds = [];
     for (const file of await fs.readdir("generate/out")) {
         const seed = parseInt(file);
@@ -133,8 +139,10 @@ async function main() {
                     const distances = JSON.parse(
                         await fs.readFile(`${dj}.json`, "utf8"));
                     const wordPairs = [];
-                    for (const word in distances)
-                        wordPairs.push([word, distances[word]]);
+                    for (const word in distances) {
+                        if (dictionary[word])
+                            wordPairs.push([word, distances[word]]);
+                    }
                     wordPairs.sort((x, y) => y[1] - x[1]);
                     const top = {};
                     for (const wp of wordPairs.slice(0, 128)) {
@@ -176,8 +184,10 @@ async function main() {
         // 6: Write out the wordlist
         if (valid)
             await run(["cp", `generate/out/${seed}/${seed}.json`, outWords]);
-        else
+        else {
+            validSeeds.pop();
             console.error(`Seed ${seed} invalid!`);
+        }
     }
 
     // Maybe exclude old seeds
