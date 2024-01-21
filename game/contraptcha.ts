@@ -252,7 +252,7 @@ declare let textMetrics: any;
             if (!el.cpTextMetrics)
                 el.cpTextMetrics = textMetrics.init(el);
             const tm = el.cpTextMetrics;
-            if (el.cpTextMetrics.width(text) > el.clientWidth)
+            if (el.cpTextMetrics.width(text) > el.clientWidth - 8)
                 el.style.fontSize = el.cpTextMetrics.maxFontSize(text);
         })();
     }
