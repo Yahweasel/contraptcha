@@ -89,6 +89,10 @@ declare let textMetrics: any;
     let hintFiles: Record<number, [string, number]> = {};
     let beatEveryPuzzle = false;
 
+    /**
+     * Load the state for the current game. If the player hasn't played this
+     * game, load a blank state.
+     */
     async function loadState() {
         state = await lf.getItem(`game-${seed}`);
         if (!state) {
@@ -109,7 +113,10 @@ declare let textMetrics: any;
             state.guessWords.push(Object.create(null));
     }
 
-    // Choose a seed
+    /**
+     * Choose a random seed (or the seed given by the URL) and load it.
+     * @param ignoreURL  Don't use the seed in the URL.
+     */
     async function chooseSeed(ignoreURL = false) {
         const url = new URL(document.location.href);
         seed = -1;
@@ -145,12 +152,17 @@ declare let textMetrics: any;
         hintFiles = {};
     }
 
-    await chooseSeed();
-
+    /**
+     * Save the current game state.
+     */
     async function saveState() {
         await lf.setItem(`game-${seed}`, state);
     }
 
+    /**
+     * Show this panel, or hide the panel.
+     * @param to  Panel to show, or null to hide.
+     */
     function panel(to: HTMLElement | null) {
         panelBox3.innerHTML = "";
         if (to) {
@@ -168,11 +180,18 @@ declare let textMetrics: any;
         }
     }
 
+    /**
+     * Show this message.
+     * @param msg  Message to show (HTML)
+     */
     function message(msg: string) {
         msgPanelMsg.innerHTML = msg;
         panel(msgPanel);
     }
 
+    /**
+     * Draw the images described by the current state.
+     */
     function drawImages() {
         let gidx = 0;
         for (let i = 0; i < wordCt; i++) {
@@ -273,6 +292,10 @@ declare let textMetrics: any;
         }
     }
 
+    /**
+     * Hide (block, censor) this word.
+     * @param toHide  Word to hide (offset)
+     */
     function hideWord(toHide: number) {
         if (state.guessed[toHide])
             return;
@@ -287,87 +310,10 @@ declare let textMetrics: any;
         drawWordGuesses(true);
     }
 
-    async function hint() {
-        let wi = Math.floor(Math.random() * wordCt);
-        if (lastGuess)
-            wi = lastGuess[0];
-        if (!hintFiles[wi])
-            hintFiles[wi] = await (await fetch(`assets/${seed}/w${wi}-top.json`)).json();
-
-        // Choose a random word to use as hint
-        let hintWords = Object.keys(hintFiles[wi]);
-        let hintWord = "";
-        while (true) {
-            if (!hintWords.length)
-                break;
-            const idx = Math.floor(Math.random() * hintWords.length);
-            hintWord = hintWords[idx];
-            if (state.guessWords[hintWord]) {
-                hintWords.splice(idx, 1);
-                delete hintFiles[wi][hintWord];
-            } else break;
-        }
-        if (!hintWord) {
-            message("I've run out of hint words :(");
-            return;
-        }
-        guess(hintWord);
-    }
-
-    async function restart() {
-        state.guessed.fill(false);
-        hidden.fill(false);
-        for (let wi = 0; wi < wordCt; wi++) {
-            state.guessVals[wi] = [];
-            state.guessWords[wi] = Object.create(null);
-        }
-        lastGuess = null;
-        await saveState();
-        drawImages();
-        drawWordGuesses();
-        setTimeout(() => winp.focus(), 0);
-    }
-
-    async function newGame() {
-        lastGuess = null;
-        await chooseSeed(true);
-        await drawImages();
-        await drawWordGuesses();
-    }
-
-    // Set up the ability to hide words
-    for (let wi = 0; wi < wordCt; wi++)
-        wgRows[wi][0].onclick = () => hideWord(wi);
-
-    // Draw the initial state of the board
-    drawImages();
-    drawWordGuesses();
-    mainBox.style.display = "";
-    panelBox1.onclick = () => panel(null);
-    window.addEventListener("keydown", ev => {
-        if (ev.key === "Escape" || ev.key === "Enter")
-            panel(null);
-    });
-    window.addEventListener("resize", () => drawWordGuesses());
-
-    // Special circumstances
-    if (beatEveryPuzzle) {
-        message("Congratulations! You've beaten every puzzle currently in the game!");
-    } else if (!(await lf.getItem("seen-help"))) {
-        panel(helpPanel);
-        await lf.setItem("seen-help", true);
-    } else {
-        panel(null);
-    }
-
-    // Set up the buttons
-    gebi("restartbtn").onclick = restart;
-    gebi("newbtn").onclick = newGame;
-    gebi("hintbtn").onclick = hint;
-    gebi("helpbtn").onclick = () => panel(helpPanel);
-    gebi("creditsbtn").onclick = () => panel(creditsPanel);
-
-    // Function to make a guess
+    /**
+     * Make a guess.
+     * @param word  Word to guess.
+     */
     async function guess(word: string) {
         // First check if they just got it
         let gotIt = words.indexOf(word);
@@ -434,6 +380,98 @@ declare let textMetrics: any;
         state.guessWords[mostIdx][word] = true;
         await saveState();
     }
+
+    /**
+     * Give a hint.
+     */
+    async function hint() {
+        let wi = Math.floor(Math.random() * wordCt);
+        if (lastGuess)
+            wi = lastGuess[0];
+        if (!hintFiles[wi])
+            hintFiles[wi] = await (await fetch(`assets/${seed}/w${wi}-top.json`)).json();
+
+        // Choose a random word to use as hint
+        let hintWords = Object.keys(hintFiles[wi]);
+        let hintWord = "";
+        while (true) {
+            if (!hintWords.length)
+                break;
+            const idx = Math.floor(Math.random() * hintWords.length);
+            hintWord = hintWords[idx];
+            if (state.guessWords[hintWord]) {
+                hintWords.splice(idx, 1);
+                delete hintFiles[wi][hintWord];
+            } else break;
+        }
+        if (!hintWord) {
+            message("I've run out of hint words :(");
+            return;
+        }
+        guess(hintWord);
+    }
+
+    /**
+     * Restart the game.
+     */
+    async function restart() {
+        state.guessed.fill(false);
+        hidden.fill(false);
+        for (let wi = 0; wi < wordCt; wi++) {
+            state.guessVals[wi] = [];
+            state.guessWords[wi] = Object.create(null);
+        }
+        lastGuess = null;
+        await saveState();
+        drawImages();
+        drawWordGuesses();
+        setTimeout(() => winp.focus(), 0);
+    }
+
+    /**
+     * Start a new game.
+     */
+    async function newGame() {
+        lastGuess = null;
+        await chooseSeed(true);
+        await drawImages();
+        await drawWordGuesses();
+    }
+
+    // Choose the initial seed
+    await chooseSeed();
+
+    // Set up the ability to hide words
+    for (let wi = 0; wi < wordCt; wi++)
+        wgRows[wi][0].onclick = () => hideWord(wi);
+
+    // Draw the initial state of the board
+    drawImages();
+    drawWordGuesses();
+    mainBox.style.display = "";
+    panelBox1.onclick = () => panel(null);
+    window.addEventListener("keydown", ev => {
+        if (ev.key === "Escape" || ev.key === "Enter")
+            panel(null);
+    });
+    window.addEventListener("resize", () => drawWordGuesses());
+
+    // Special circumstances
+    if (beatEveryPuzzle) {
+        message("Congratulations! You've beaten every puzzle currently in the game!");
+    } else if (!(await lf.getItem("seen-help"))) {
+        panel(helpPanel);
+        await lf.setItem("seen-help", true);
+    } else {
+        panel(null);
+    }
+
+    // Set up the buttons
+    gebi("restartbtn").onclick = restart;
+    gebi("newbtn").onclick = newGame;
+    gebi("hintbtn").onclick = hint;
+    gebi("helpbtn").onclick = () => panel(helpPanel);
+    gebi("creditsbtn").onclick = () => panel(creditsPanel);
 
     // And play the game
     winp.onkeydown = ev => {
