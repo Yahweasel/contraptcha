@@ -281,6 +281,7 @@ declare let textMetrics: any;
 
             const lastRow = wgCol[4];
             if (lastGuess && lastGuess[0] === wi) {
+                lastRow.style.color = "#000";
                 drawWordGuess(
                     lastRow,
                     `${lastGuess[1][0].toUpperCase()}: ${Math.round(lastGuess[1][1]*100)}`,
