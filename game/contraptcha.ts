@@ -45,6 +45,8 @@ declare let textMetrics: any;
     const creditsPanel = gebi("creditspanel");
     const msgPanel = gebi("messagepanel");
     const msgPanelMsg = gebi("messagepanelmessage");
+    const imgPanel = gebi("imgpanel");
+    const imgPanelImg = gebi("imgpanelimg");
 
     let mainPromise: Promise<unknown> = Promise.all([]);
 
@@ -227,8 +229,19 @@ declare let textMetrics: any;
         let gs = gidx.toString(16);
         if (gs.length < 2)
             gs = `0${gs}`;
-        for (let i = 0; i < 4; i++)
-            imgs[i].src = `assets/${seed}/${i}_${gs}.webp`;
+        for (let i = 0; i < 4; i++) {
+            const src = `assets/${seed}/${i}_${gs}.webp`;
+            imgs[i].src = src;
+            imgs[i].onclick = () => {
+                imgPanelImg.src = src;
+                panelGuard.style.display = "";
+                imgPanel.style.display = "";
+                imgPanel.onclick = imgPanelImg.onclick = () => {
+                    panelGuard.style.display = "none";
+                    imgPanel.style.display = "none";
+                };
+            };
+        }
     }
 
     /**
