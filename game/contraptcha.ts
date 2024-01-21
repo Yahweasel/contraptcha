@@ -134,7 +134,7 @@ declare let textMetrics: any;
 
         // Choose a seed we haven't beaten yet
         if (seed < 0) {
-            const seeds = await loadJSON("assets/seeds.json?v=m");
+            const seeds = await loadJSON("assets/seeds.json?v=n");
             do {
                 if (!seeds.length)
                     break;
@@ -250,11 +250,14 @@ declare let textMetrics: any;
      * Draw a single word guess element.
      */
     function drawWordGuess(
-        el: HTMLElement & {cpTextMetrics?: any}, text: string, bgColor: string
+        el: HTMLElement & {cpTextMetrics?: any}, text: string, bgColor: string,
+        fgColor = ""
     ) {
         el.innerText = text;
         el.style.fontSize = "";
         el.style.backgroundColor = bgColor;
+        el.style.color = fgColor;
+        el.style.animation = "";
 
         if (!text)
             return;
@@ -291,21 +294,49 @@ declare let textMetrics: any;
             if (onlyWords)
                 continue;
 
-
+            let sawLastGuess = false, repeatLastGuess = false;;
             const wGuesses = state.guessVals[wi];
-            for (let ri = 0; ri < 3; ri++) {
+            for (let ri = 0; ri < 4; ri++) {
                 const row = wgCol[ri+1];
                 if (ri >= wGuesses.length) {
                     drawWordGuess(row, "", "");
                     continue;
                 }
-                const guess = wGuesses[ri];
 
+                /* If we're in the last row, we show the most recent guess even
+                 * if it's bad */
+                let guess = wGuesses[ri];
+                if (ri === 3) {
+                    if (repeatLastGuess || !lastGuess || lastGuess[0] !== wi) {
+                        drawWordGuess(row, "", "");
+                        break;
+                    }
+                    if (!sawLastGuess)
+                        guess = lastGuess[1];
+                }
+
+                // Was this the most recent guess?
+                let wasLastGuess = false;
+                if (lastGuess && lastGuess[0] === wi &&
+                    lastGuess[1][0] === guess[0]) {
+                    wasLastGuess = sawLastGuess = true;
+                }
+
+                // Draw this word
                 const text =
                     `${guess[0].toUpperCase()}: ${Math.round(guess[1]*100)}`;
-                let bgColor: string;
+                let bgColor: string, fgColor: string = "";
                 const sim = Math.min(guess[1] / 0.8, 1);
-                if (sim > 0.5) {
+                if (wasLastGuess) {
+                    bgColor = "#999";
+                    fgColor = "#000";
+                    if (row.innerText === text) {
+                        /* Bit of a cheat: if they're guessing a word they
+                         * already saw, we set repeatLastGuess to prevent it
+                         * from showing #4 */
+                        repeatLastGuess = true;
+                    }
+                } else if (sim > 0.5) {
                     bgColor = "rgb(" +
                         (1 - sim) * 33 + "% " +
                         "33% 0%)";
@@ -315,19 +346,12 @@ declare let textMetrics: any;
                         sim * 33 + "% " +
                         "0%)";
                 }
-                drawWordGuess(row, text, bgColor);
-            }
+                drawWordGuess(row, text, bgColor, fgColor);
 
-            const lastRow = wgCol[4];
-            if (lastGuess && lastGuess[0] === wi) {
-                lastRow.style.color = "#000";
-                drawWordGuess(
-                    lastRow,
-                    `${lastGuess[1][0].toUpperCase()}: ${Math.round(lastGuess[1][1]*100)}`,
-                    "#999"
-                );
-            } else {
-                drawWordGuess(lastRow, "", "");
+                /* If we're in the last row and this wasn't the last guess, fade
+                 * it out */
+                if (ri === 3 && !wasLastGuess)
+                    row.style.animationName = "fadeOut";
             }
         }
     }
@@ -404,16 +428,15 @@ declare let textMetrics: any;
 
         // Put it in place
         lastGuess = [mostIdx, [word, mostVal]];
-        drawWordGuesses();
 
         // Don't repeatedly add guesses to the list
-        if (state.guessWords[mostIdx][word])
-            return;
-
-        // Add that to the guess-o-dex
-        state.guessVals[mostIdx].push(lastGuess[1]);
-        state.guessVals[mostIdx].sort((x, y) => y[1] - x[1]);
-        state.guessWords[mostIdx][word] = true;
+        if (!state.guessWords[mostIdx][word]) {
+            // Add it to the guess-o-dex
+            state.guessVals[mostIdx].push(lastGuess[1]);
+            state.guessVals[mostIdx].sort((x, y) => y[1] - x[1]);
+            state.guessWords[mostIdx][word] = true;
+        }
+        drawWordGuesses();
         await saveState();
     }
 

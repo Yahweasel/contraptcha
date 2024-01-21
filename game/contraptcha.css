@@ -98,6 +98,13 @@ a:hover {
     padding: 0 4px 0 4px;
     overflow: hidden;
     white-space: nowrap;
+    animation-duration: 4s;
+    animation-fill-mode: both;
+}
+
+@keyframes fadeOut {
+    0% {opacity: 1;}
+    100% {opacity: 0;}
 }
 
 #wordinput {
