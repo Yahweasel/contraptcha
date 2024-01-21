@@ -134,7 +134,7 @@ declare let textMetrics: any;
 
         // Choose a seed we haven't beaten yet
         if (seed < 0) {
-            const seeds = await loadJSON("assets/seeds.json?v=e");
+            const seeds = await loadJSON("assets/seeds.json?v=h");
             do {
                 if (!seeds.length)
                     break;
