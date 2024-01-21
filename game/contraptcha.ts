@@ -468,6 +468,7 @@ declare let textMetrics: any;
      * Start a new game.
      */
     async function newGame() {
+        hidden.fill(false);
         lastGuess = null;
         await chooseSeed(true);
         await drawImages();
