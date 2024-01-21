@@ -15,6 +15,7 @@
  */
 
 declare let localforage: any;
+declare let textMetrics: any;
 
 (async function() {
     const gebi = document.getElementById.bind(document);
@@ -187,27 +188,35 @@ declare let localforage: any;
             imgs[i].src = `assets/${seed}/${i}_${gs}.webp`;
     }
 
+    /**
+     * Draw a single word guess element.
+     */
     function drawWordGuess(
-        el: HTMLElement, text: string, bgColor: string
+        el: HTMLElement & {cpTextMetrics?: any}, text: string, bgColor: string
     ) {
         el.innerText = text;
         el.style.fontSize = "";
         el.style.backgroundColor = bgColor;
 
+        if (!text)
+            return;
+
         (async function() {
-            let fontSize = 1;
-            while (true) {
+            if (el.clientWidth <= 0)
                 await new Promise(res => setTimeout(res, 0));
-                if (fontSize <= 0.5 || el.scrollWidth <= el.clientWidth)
-                    break;
-                fontSize *= 0.875;
-                if (fontSize <= 0.5)
-                    fontSize = 0.5;
-                el.style.fontSize = `${fontSize}em`;
-            }
+            if (el.clientWidth <= 0)
+                return;
+            if (!el.cpTextMetrics)
+                el.cpTextMetrics = textMetrics.init(el);
+            const tm = el.cpTextMetrics;
+            if (el.cpTextMetrics.width(text) > el.clientWidth)
+                el.style.fontSize = el.cpTextMetrics.maxFontSize(text);
         })();
     }
 
+    /**
+     * Draw the word guesses described by the current state.
+     */
     function drawWordGuesses(onlyWords?: boolean) {
         for (let wi = 0; wi < wordCt; wi++) {
             const wgCol = wgRows[wi];
