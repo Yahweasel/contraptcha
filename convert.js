@@ -137,8 +137,10 @@ async function main() {
                         wordPairs.push([word, distances[word]]);
                     wordPairs.sort((x, y) => y[1] - x[1]);
                     const top = {};
-                    for (const wp of wordPairs.slice(0, 128))
-                        top[wp[0]] = wp[1];
+                    for (const wp of wordPairs.slice(0, 128)) {
+                        if (wp[1] >= 0.2)
+                            top[wp[0]] = wp[1];
+                    }
                     await fs.writeFile(`${dj}-top.json`, JSON.stringify(top));
                 } catch (ex) {
                     valid = false;
