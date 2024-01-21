@@ -1,4 +1,6 @@
 *.bin*
+easyocr/__pycache__/
+censor/out/
 game/assets/
 game/contraptcha.js
 generate/out/
