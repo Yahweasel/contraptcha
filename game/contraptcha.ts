@@ -342,11 +342,7 @@ declare let textMetrics: any;
     async function guess(word: string) {
         // First check if they just got it
         let gotIt = words.indexOf(word);
-        if (gotIt >= 0) {
-            if (state.guessed[gotIt]) {
-                // No doubles!
-                return;
-            }
+        if (gotIt >= 0 && !state.guessed[gotIt]) {
             state.guessed[gotIt] = true;
             state.guessVals[gotIt] = [];
             lastGuess = null;
