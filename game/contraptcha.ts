@@ -89,6 +89,8 @@ declare let textMetrics: any;
     let hintFiles: Record<number, [string, number]> = {};
     let beatEveryPuzzle = false;
 
+    let modalPanel = false;
+
     /**
      * Load the state for the current game. If the player hasn't played this
      * game, load a blank state.
@@ -130,7 +132,7 @@ declare let textMetrics: any;
 
         // Choose a seed we haven't beaten yet
         if (seed < 0) {
-            const seeds = await (await fetch("assets/seeds.json?v=c")).json();
+            const seeds = await loadJSON("assets/seeds.json?v=c");
             do {
                 if (!seeds.length)
                     break;
@@ -147,7 +149,7 @@ declare let textMetrics: any;
         url.searchParams.set("s", "" + seed);
         window.history.pushState({}, `??? — ${seed}`, url.toString());
 
-        words = await (await fetch(`assets/${seed}/w.json`)).json();
+        words = await loadJSON(`assets/${seed}/w.json`);
         similarity = Object.create(null);
         hintFiles = {};
     }
@@ -163,7 +165,7 @@ declare let textMetrics: any;
      * Show this panel, or hide the panel.
      * @param to  Panel to show, or null to hide.
      */
-    function panel(to: HTMLElement | null) {
+    function panel(to: HTMLElement | null, modal = false) {
         panelBox3.innerHTML = "";
         if (to) {
             panelBox3.appendChild(to);
@@ -173,10 +175,12 @@ declare let textMetrics: any;
                 winp.blur();
                 to.focus();
             }, 0);
+            modalPanel = modal;
         } else {
             panelGuard.style.display = "none";
             panelBox1.style.display = "none";
             setTimeout(() => winp.focus(), 0);
+            modalPanel = false;
         }
     }
 
@@ -187,6 +191,26 @@ declare let textMetrics: any;
     function message(msg: string) {
         msgPanelMsg.innerHTML = msg;
         panel(msgPanel);
+    }
+
+    /**
+     * Load this file as JSON, showing a loading screen if needed.
+     */
+    async function loadJSON(url: string) {
+        let timeout: number | null = setTimeout(() => {
+            timeout = null;
+            panel(loadingPanel, true);
+        }, 500);
+
+        const f = await fetch(url);
+        const ret = await f.json();
+
+        if (timeout)
+            clearTimeout(timeout);
+        else
+            panel(null);
+
+        return ret;
     }
 
     /**
@@ -343,7 +367,7 @@ declare let textMetrics: any;
         // Make sure we have this similarity file
         if (!similarity[first]) {
             similarity[first] =
-                await (await fetch(`assets/${seed}/w-${first}.json`)).json();
+                await loadJSON(`assets/${seed}/w-${first}.json`);
         }
 
         // Check which is most similar
@@ -390,7 +414,7 @@ declare let textMetrics: any;
         if (lastGuess)
             wi = lastGuess[0];
         if (!hintFiles[wi])
-            hintFiles[wi] = await (await fetch(`assets/${seed}/w${wi}-top.json`)).json();
+            hintFiles[wi] = await loadJSON(`assets/${seed}/w${wi}-top.json`);
 
         // Choose a random word to use as hint
         let hintWords = Object.keys(hintFiles[wi]);
@@ -450,9 +474,9 @@ declare let textMetrics: any;
     drawImages();
     drawWordGuesses();
     mainBox.style.display = "";
-    panelBox1.onclick = () => panel(null);
+    panelBox1.onclick = () => !modalPanel && panel(null);
     window.addEventListener("keydown", ev => {
-        if (ev.key === "Escape" || ev.key === "Enter")
+        if (!modalPanel && (ev.key === "Escape" || ev.key === "Enter"))
             panel(null);
     });
     window.addEventListener("resize", () => drawWordGuesses());
