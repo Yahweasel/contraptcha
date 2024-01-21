@@ -23,6 +23,17 @@ a:hover {
     padding: 1em;
 }
 
+#maingame {
+    display: flex;
+    flex-direction: column;
+}
+
+@media screen and (max-width: 480px) {
+    #maingame {
+        flex-direction: column-reverse;
+    }
+}
+
 .row {
     display: flex;
     flex-direction: row;
