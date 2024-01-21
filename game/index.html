@@ -19,7 +19,7 @@
         <meta charset="utf8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Contraptcha</title>
-        <link rel="stylesheet" href="contraptcha.css?v=g" />
+        <link rel="stylesheet" href="contraptcha.css?v=h" />
     </head>
     <body>
         <div id="main" style="display: none;">
@@ -44,8 +44,9 @@
                         <div class="wordguess" id="wg6"></div>
                     </div>
                 </div>
-                <div class="row">
+                <div class="inputrow row">
                     <input type="text" id="wordinput" />
+                    <div id="scoredisplay"></div>
                 </div>
             </div>
             <div class="btnrow row">
@@ -88,34 +89,8 @@
                     images, each drawn by AI from the same prompt. The prompt is
                     simply a sequence of English nouns. Every time you find one
                     of the words, that's removed from the prompt, so you see the
-                    images generated with one word less.
-                </p>
-
-                <p>
-                    Your goal is, of course, to find every word. If you enter a
-                    word that's not part of the prompt, a “semantic similarity”
-                    will be shown for whichever word it's most similar to. The
-                    semantic similarity is simply a number describing the
-                    similarity in concept between the word you entered and the
-                    word that's in the prompt. Higher is more similar, and the
-                    range is from 0–99, though it's quite rare to go above 70.
-                    For instance, if the word is “space” and you enter “stars”,
-                    you'll get a high semantic similarity, whereas if the word
-                    is “pig” and you enter “stars”, you'll get a low semantic
-                    similarity.
-                </p>
-
-                <p>
-                    If you're stumped and want more hints, you have two options
-                    available: (1) You can show how the images would be generated
-                    without any one of the words you don't know by clicking the
-                    word's guess box (the question marks), or by entering a
-                    number from 1–6. Remember, what you're doing is
-                    <em>removing</em> a word, so if you remove word 4 and the
-                    stars disappear from the image, that means word 4 probably
-                    <em>is</em> star or stars! (2) You can let the game guess a
-                    random word for you by clicking the “hint” button or typing
-                    “/hint”.
+                    images generated with one word less. Your goal is, of
+                    course, to find every word.
                 </p>
 
                 <p>
@@ -124,10 +99,38 @@
                 </p>
 
                 <p>
-                    There's currently no scoring system, but basically, as few
-                    guesses as possible is what you want, right? Both of the
-                    hint systems can probably be considered cheats, and when/if
-                    a scoring system is made, using them will count against you.
+                    If you enter a word that's not part of the prompt, a
+                    “semantic similarity” will be shown for whichever word it's
+                    most similar to. For instance, if the word is “space” and
+                    you enter “stars”, you'll get a high semantic similarity,
+                    whereas if the word is “pig” and you enter “stars”, you'll
+                    get a low semantic similarity.
+                </p>
+
+                <p>
+                    You can “peek” through any word, showing how the images
+                    would be generated without any one of the words you don't
+                    know. Click the word's guess box (the question marks), or
+                    enter a number from 1–6. What you're doing is
+                    <em>removing</em> a word, so if you remove word 4 and the
+                    stars disappear from the image, that means word 4 probably
+                    <em>is</em> star or stars!
+                </p>
+
+                <p>
+                    If you're stumped, you can let the game guess a random word
+                    for you by clicking the “hint” button or typing “/hint”.
+                    But, your score will be penalized!
+                </p>
+
+                <p>
+                    You start with 100 points and lose them when you make
+                    incorrect guesses. The closer the guess is to correct, the
+                    fewer points you lose (you can lose 0 if it's very close!).
+                    When you use a hint, you lose three times the tens place of
+                    the hint's similarity in points. Oh, and your points can go
+                    negative! If you restart a game, you do get to restart from
+                    100 points, but your score will be shown with an asterisk.
                 </p>
             </div>
 
@@ -159,6 +162,6 @@
 
         <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/text-metrics@4.0.1/dist/text-metrics.js"></script>
-        <script type="text/javascript" src="contraptcha.js?v=p"></script>
+        <script type="text/javascript" src="contraptcha.js?v=q"></script>
     </body>
 </html>

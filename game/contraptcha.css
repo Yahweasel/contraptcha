@@ -107,8 +107,12 @@ a:hover {
     100% {opacity: 0;}
 }
 
+.inputrow {
+    align-items: center;
+}
+
 #wordinput {
-    width: 100%;
+    flex: auto;
     margin: 0.2em 0 0.2em 0;
     background-color: #111;
     color: #aaa;
@@ -116,6 +120,15 @@ a:hover {
     text-align: center;
     font-size: 2em;
     text-transform: uppercase;
+}
+
+#scoredisplay {
+    width: 16.67%;
+    margin-left: 1rem;
+    font-size: 2.2em;
+    font-weight: bold;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 @media screen and (max-width: 480px) {

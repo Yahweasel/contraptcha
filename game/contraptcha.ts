@@ -39,6 +39,7 @@ declare let textMetrics: any;
     for (let i = 0; i < wordCt; i++)
         wgBoxes.push(gebi(`wg${i+1}`));
     const winp: HTMLInputElement = gebi("wordinput");
+    const scoreDisp = gebi("scoredisplay");
 
     const loadingPanel = gebi("loadingpanel");
     const helpPanel = gebi("helppanel");
@@ -75,7 +76,9 @@ declare let textMetrics: any;
     let state: {
         guessed: boolean[],
         guessVals: [string, number][][],
-        guessWords: Record<string, boolean>[]
+        guessWords: Record<string, boolean>[],
+        score: number,
+        retried: boolean
     } | null = null;
 
     const hidden: boolean[] = [];
@@ -103,8 +106,16 @@ declare let textMetrics: any;
             state = {
                 guessed: [],
                 guessVals: [],
-                guessWords: []
+                guessWords: [],
+                score: 100,
+                retried: false
             };
+        }
+
+        // Update old versions
+        if (!("score" in <any> state)) {
+            state.score = 100;
+            state.retried = false;
         }
 
         while (state.guessed.length < wordCt)
@@ -357,6 +368,21 @@ declare let textMetrics: any;
                     row.style.animationName = "fadeOut";
             }
         }
+
+        // Also draw the score while we're here
+        {
+            const sim = Math.max(state.score / 100, 0);
+            let bgColor: string;
+            if (sim > 0.5)
+                bgColor = `rgb(${(1 - sim) * 33}% 33% 0%)`;
+            else
+                bgColor = `rgb(33% ${sim * 33}% 0%)`;
+            drawWordGuess(
+                scoreDisp,
+                "" + state.score + (state.retried ? "*" : ""),
+                bgColor
+            );
+        }
     }
 
     /**
@@ -387,7 +413,7 @@ declare let textMetrics: any;
      * Make a guess.
      * @param word  Word to guess.
      */
-    async function guess(word: string) {
+    async function guess(word: string, scoreChange?: number) {
         // First check if they just got it
         let gotIt = words.indexOf(word);
         if (gotIt >= 0 && !state.guessed[gotIt]) {
@@ -444,6 +470,12 @@ declare let textMetrics: any;
             state.guessVals[mostIdx].push(lastGuess[1]);
             state.guessVals[mostIdx].sort((x, y) => y[1] - x[1]);
             state.guessWords[mostIdx][word] = true;
+
+            // And affect the score
+            if (typeof scoreChange !== "number")
+                scoreChange = Math.ceil((60 - Math.round(mostVal * 100)) / 10);
+            if (scoreChange > 0)
+                state.score -= scoreChange;
         }
         drawWordGuesses();
         await saveState();
@@ -462,11 +494,13 @@ declare let textMetrics: any;
         // Choose a random word to use as hint
         let hintWords = Object.keys(hintFiles[wi]);
         let hintWord = "";
+        let hintValue: number;
         while (true) {
             if (!hintWords.length)
                 break;
             const idx = Math.floor(Math.random() * hintWords.length);
             hintWord = hintWords[idx];
+            hintValue = hintFiles[wi][hintWord];
             if (state.guessWords[hintWord]) {
                 hintWords.splice(idx, 1);
                 delete hintFiles[wi][hintWord];
@@ -476,7 +510,12 @@ declare let textMetrics: any;
             message("I've run out of hint words :(");
             return;
         }
-        guess(hintWord);
+
+        // Affect the score
+        hintValue = Math.round(hintValue * 100);
+        const scoreChange = Math.floor(hintValue / 10) * 3;
+
+        guess(hintWord, scoreChange);
     }
 
     /**
@@ -489,6 +528,8 @@ declare let textMetrics: any;
             state.guessVals[wi] = [];
             state.guessWords[wi] = Object.create(null);
         }
+        state.score = 100;
+        state.retried = true;
         lastGuess = null;
         await saveState();
         drawImages();
