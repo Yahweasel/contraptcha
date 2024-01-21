@@ -221,9 +221,10 @@ declare let textMetrics: any;
      * Draw the images described by the current state.
      */
     function drawImages() {
+        const won = state.guessed.indexOf(false) < 0;
         let gidx = 0;
         for (let i = 0; i < wordCt; i++) {
-            if (!state.guessed[i] && !hidden[i])
+            if ((won || !state.guessed[i]) && !hidden[i])
                 gidx |= 1 << i;
         }
         if (gidx === 0)
@@ -279,11 +280,13 @@ declare let textMetrics: any;
      * Draw the word guesses described by the current state.
      */
     function drawWordGuesses(onlyWords?: boolean) {
+        const won = state.guessed.indexOf(false) < 0;
         for (let wi = 0; wi < wordCt; wi++) {
             const wgCol = wgRows[wi];
             if (state.guessed[wi]) {
                 drawWordGuess(
-                    wgCol[0], words[wi].toUpperCase(), "#050"
+                    wgCol[0], words[wi].toUpperCase(),
+                    (won && hidden[wi]) ? "#333" : "#050"
                 );
             } else {
                 drawWordGuess(
@@ -361,14 +364,20 @@ declare let textMetrics: any;
      * @param toHide  Word to hide (offset)
      */
     function hideWord(toHide: number) {
-        if (state.guessed[toHide])
-            return;
-        for (let wi = 0; wi < wordCt; wi++) {
-            const wb = wgRows[wi][0];
-            if (wi === toHide)
-                hidden[wi] = !hidden[wi];
-            else
-                hidden[wi] = false;
+        if (state.guessed.indexOf(false) < 0) {
+            /* When you've beaten the game, you can hide anything (see all
+             * images) */
+            hidden[toHide] = !hidden[toHide];
+        } else {
+            if (state.guessed[toHide])
+                return;
+            for (let wi = 0; wi < wordCt; wi++) {
+                const wb = wgRows[wi][0];
+                if (wi === toHide)
+                    hidden[wi] = !hidden[wi];
+                else
+                    hidden[wi] = false;
+            }
         }
         drawImages();
         drawWordGuesses(true);
