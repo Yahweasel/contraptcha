@@ -17,31 +17,36 @@
 <html>
     <head>
         <meta charset="utf8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Contraptcha</title>
         <link rel="stylesheet" href="contraptcha.css?v=d" />
     </head>
     <body>
         <div id="main" style="display: none">
-            <div class="row">
+            <div class="imgrow row">
                 <div class="imgbox" id="img1"></div>
                 <div class="imgbox" id="img2"></div>
             </div>
-            <div class="row">
+            <div class="imgrow row">
                 <div class="imgbox" id="img3"></div>
                 <div class="imgbox" id="img4"></div>
             </div>
-            <div class="row wordguessrow">
-                <div class="wordguess" id="wg1"></div>
-                <div class="wordguess" id="wg2"></div>
-                <div class="wordguess" id="wg3"></div>
-                <div class="wordguess" id="wg4"></div>
-                <div class="wordguess" id="wg5"></div>
-                <div class="wordguess" id="wg6"></div>
+            <div class="wordguessrow row">
+                <div class="wordguesshalfrow">
+                    <div class="wordguess" id="wg1"></div>
+                    <div class="wordguess" id="wg2"></div>
+                    <div class="wordguess" id="wg3"></div>
+                </div>
+                <div class="wordguesshalfrow">
+                    <div class="wordguess" id="wg4"></div>
+                    <div class="wordguess" id="wg5"></div>
+                    <div class="wordguess" id="wg6"></div>
+                </div>
             </div>
             <div class="row">
                 <input type="text" id="wordinput" />
             </div>
-            <div class="row">
+            <div class="btnrow row">
                 <button id="restartbtn" class="mainbtn">Restart game</button>
                 <button id="newbtn" class="mainbtn">New game</button>
                 <button id="hintbtn" class="mainbtn">Hint</button>
