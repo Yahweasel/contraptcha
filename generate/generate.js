@@ -29,7 +29,7 @@ const backends = [
 const models = [
     "juggernautXL_v8Rundiffusion.safetensors",
     "realvisxlV30Turbo_v30Bakedvae.safetensors",
-    "nightvisionXLPhotorealisticPortrait_v0791Bakedvae.safetensors",
+    "dreamshaperXL_sfwTurboDpmppSDE.safetensors",
     "OfficialStableDiffusion/sd_xl_base_1.0.safetensors"
 ];
 const numWords = 6;
