@@ -538,7 +538,7 @@ declare let textMetrics: any;
                 const cmd = word.slice(1).toLowerCase();
                 if (cmd === "restart")
                     return restart();
-                else if (cmd === "newgame")
+                else if (cmd === "newgame" || cmd === "new")
                     return newGame();
                 else if (cmd === "hint")
                     return hint();
