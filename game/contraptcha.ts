@@ -173,6 +173,7 @@ declare let textMetrics: any;
             panelBox3.appendChild(to);
             panelGuard.style.display = "";
             panelBox1.style.display = "";
+            imgPanel.style.display = "none";
             setTimeout(() => {
                 winp.blur();
                 to.focus();
@@ -181,6 +182,7 @@ declare let textMetrics: any;
         } else {
             panelGuard.style.display = "none";
             panelBox1.style.display = "none";
+            imgPanel.style.display = "none";
             setTimeout(() => winp.focus(), 0);
             modalPanel = false;
         }
