@@ -158,6 +158,9 @@ async function main() {
                     valid = false;
                 }
 
+                // Delete the now-unneeded full dictionary
+                await fs.unlink(`${dj}.json`);
+
                 // And mark ourself done
                 const idx = convIDs.indexOf(wi);
                 convIDs.splice(idx, 1);
