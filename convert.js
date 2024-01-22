@@ -103,7 +103,16 @@ async function main() {
         convIDs = [];
         convPromises = [];
 
-        // 3: Process all the words
+        // 3: Make a thumbnail
+        await run([
+            "convert",
+            `generate/out/${seed}/${seed}_3f_00001_.png`,
+            "-resize", "x240",
+            "-quality", "75",
+            `game/assets/${seed}/thumb.webp`
+        ]);
+
+        // 4: Process all the words
         const words = JSON.parse(await fs.readFile(
             `generate/out/${seed}/${seed}.json`, "utf8"
         ));
