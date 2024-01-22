@@ -136,10 +136,15 @@ declare let textMetrics: any;
         const url = new URL(document.location.href);
         seed = -1;
         if (!ignoreURL) {
-            const paramSeed = url.searchParams.get("s");
-            if (paramSeed) {
-                seed = +paramSeed;
+            if (url.hash.length >= 2) {
+                seed = +url.hash.slice(1);
                 await loadState();
+            } else {
+                const paramSeed = url.searchParams.get("s");
+                if (paramSeed) {
+                    seed = +paramSeed;
+                    await loadState();
+                }
             }
         }
 
@@ -159,7 +164,8 @@ declare let textMetrics: any;
                 beatEveryPuzzle = true;
         }
 
-        url.searchParams.set("s", "" + seed);
+        url.hash = `#${seed}`;
+        url.search = "";
         window.history.pushState({}, `??? — ${seed}`, url.toString());
 
         words = await loadJSON(`assets/${seed}/w.json`);
