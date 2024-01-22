@@ -147,7 +147,7 @@ async function main() {
                 // Split dictionary
                 await run(["semantic-distance/split.js", dj]);
 
-                // Get the top 128 for hints
+                // Get the top words for hints
                 try {
                     const distances = JSON.parse(
                         await fs.readFile(`${dj}.json`, "utf8"));
@@ -157,9 +157,18 @@ async function main() {
                             wordPairs.push([word, distances[word]]);
                     }
                     wordPairs.sort((x, y) => y[1] - x[1]);
+                    let max = 0;
+                    try {
+                        max = wordPairs[0][1];
+                    } catch (ex) {}
                     const top = {};
-                    for (const wp of wordPairs.slice(0, 128)) {
-                        if (wp[1] >= 0.2)
+                    for (
+                        let wpi = 0;
+                        wpi < wordPairs.length && wpi < 128;
+                        wpi++
+                    ) {
+                        const wp = wordPairs[wpi];
+                        if (wp[1] >= max - 0.2 || wpi < 16)
                             top[wp[0]] = wp[1];
                     }
                     await fs.writeFile(`${dj}-top.json`, JSON.stringify(top));
