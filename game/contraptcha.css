@@ -224,6 +224,7 @@ button.close {
     background: none;
     border: none;
     color: #888;
+    cursor: pointer;
 }
 
 button.close:hover {
