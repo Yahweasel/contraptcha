@@ -605,18 +605,21 @@ declare let textMetrics: any;
             try {
                 const gSeed = +key.slice(5);
                 const gState = await lf.getItem(key);
-                const img = document.createElement("img");
+                const btn = dce("button");
+                btn.classList.add("statsbtn");
+                const img = dce("img");
                 img.src = `assets/${gSeed}/thumb.webp`;
                 img.classList.add("statsimg");
-                img.onclick = async () => {
+                btn.appendChild(img);
+                btn.onclick = async () => {
                     await chooseSeed({setSeed: gSeed});
                     await drawImages();
                     await drawWordGuesses();
                 };
                 if (gState.guessed.indexOf(false) < 0)
-                    completed.push(img);
+                    completed.push(btn);
                 else
-                    inProgress.push(img);
+                    inProgress.push(btn);
             } catch (ex) {}
 
             await new Promise(res => setTimeout(res, 0));
