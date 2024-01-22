@@ -80,7 +80,7 @@ async function main() {
                         break;
                 }
 
-                while (convIDs.length > convCt)
+                while (convIDs.length >= convCt)
                     await Promise.race(convPromises);
 
                 // Convert the file
@@ -111,7 +111,7 @@ async function main() {
             const word = words[wi];
             console.log(`Word ${seed}/${wi+1}`);
 
-            while (convIDs.length > 2)
+            while (convIDs.length >= 2)
                 await Promise.race(convPromises);
 
             convIDs.push(wi);
