@@ -146,6 +146,7 @@ a:hover {
     color: #999;
     font-size: 1.5em;
     text-transform: uppercase;
+    cursor: pointer;
 }
 
 .mainbtn:hover {
@@ -231,4 +232,15 @@ button.close:hover {
 
 button.close:active {
     color: #fff;
+}
+
+.statsimg {
+    width: 8em;
+    margin: 0.25em;
+    cursor: pointer;
+    opacity: 0.85;
+}
+
+.statsimg:hover {
+    opacity: 1;
 }

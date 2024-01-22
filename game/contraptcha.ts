@@ -47,6 +47,8 @@ declare let textMetrics: any;
     const menuPanel = gebi("menupanel");
     const msgPanel = gebi("messagepanel");
     const msgPanelMsg = gebi("messagepanelmessage");
+    const statsPanel = gebi("statspanel");
+    const statsPanelInner = gebi("statspanelinner");
     const imgPanel = gebi("imgpanel");
     const imgPanelImg = gebi("imgpanelimg");
 
@@ -135,10 +137,19 @@ declare let textMetrics: any;
      * Choose a random seed (or the seed given by the URL) and load it.
      * @param ignoreURL  Don't use the seed in the URL.
      */
-    async function chooseSeed(ignoreURL = false) {
+    async function chooseSeed(opts: {
+        ignoreURL?: boolean,
+        setSeed?: number
+    } = {}) {
         const url = new URL(document.location.href);
         seed = -1;
-        if (!ignoreURL) {
+
+        if ("setSeed" in opts) {
+            seed = opts.setSeed;
+            await loadState();
+        }
+
+        if (seed < 0 && !opts.ignoreURL) {
             if (url.hash.length >= 2) {
                 seed = +url.hash.slice(1);
                 await loadState();
@@ -553,7 +564,7 @@ declare let textMetrics: any;
     async function newGame() {
         hidden.fill(false);
         lastGuess = null;
-        await chooseSeed(true);
+        await chooseSeed({ignoreURL: true});
         await drawImages();
         await drawWordGuesses();
     }
@@ -575,6 +586,65 @@ declare let textMetrics: any;
         state.gaveUp = true;
         for (const word of words)
             await guess(word);
+    }
+
+    /**
+     * Show game stats.
+     */
+    async function stats() {
+        panel(loadingPanel, true);
+        statsPanelInner.innerHTML = "";
+
+        let inProgress: HTMLElement[] = [];
+        let completed: HTMLElement[] = [];
+
+        for (const key of await lf.keys()) {
+            if (!/^game-/.test(key))
+                continue;
+
+            try {
+                const gSeed = +key.slice(5);
+                const gState = await lf.getItem(key);
+                const img = document.createElement("img");
+                img.src = `assets/${gSeed}/thumb.webp`;
+                img.classList.add("statsimg");
+                img.onclick = async () => {
+                    await chooseSeed({setSeed: gSeed});
+                    await drawImages();
+                    await drawWordGuesses();
+                };
+                if (gState.guessed.indexOf(false) < 0)
+                    completed.push(img);
+                else
+                    inProgress.push(img);
+            } catch (ex) {}
+
+            await new Promise(res => setTimeout(res, 0));
+        }
+
+        if (inProgress.length) {
+            const h2 = dce("h2");
+            h2.innerText = "Puzzles in progress";
+            statsPanelInner.appendChild(h2);
+            for (const img of inProgress)
+                statsPanelInner.appendChild(img);
+        }
+
+        if (completed.length) {
+            const h2 = dce("h2");
+            h2.innerText = "Completed puzzles";
+            statsPanelInner.appendChild(h2);
+            for (const img of completed)
+                statsPanelInner.appendChild(img);
+        }
+
+        if (!inProgress.length && !completed.length) {
+            const h2 = dce("h2");
+            h2.innerText = "You haven't started any puzzles yet!";
+            statsPanelInner.appendChild(h2);
+        }
+
+        panel(statsPanel);
     }
 
     // Choose the initial seed
@@ -612,6 +682,7 @@ declare let textMetrics: any;
     gebi("creditsbtn").onclick = () => panel(creditsPanel);
     gebi("restartbtn").onclick = restart;
     gebi("newbtn").onclick = newGame;
+    gebi("statsbtn").onclick = stats;
     gebi("giveupbtn").onclick = giveUp;
 
     // And play the game
@@ -644,6 +715,8 @@ declare let textMetrics: any;
                     return restart();
                 else if (cmd === "newgame" || cmd === "new")
                     return newGame();
+                else if (cmd === "stats")
+                    return stats();
                 else if (cmd === "giveup")
                     return giveUp();
                 else if (cmd === "hint")
