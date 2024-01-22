@@ -584,8 +584,10 @@ declare let textMetrics: any;
         }
 
         state.gaveUp = true;
-        for (const word of words)
-            await guess(word);
+        for (let wi = 0; wi < words.length; wi++) {
+            if (!state.guessed[wi])
+                await guess(words[wi]);
+        }
     }
 
     /**
