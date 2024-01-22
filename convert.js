@@ -111,6 +111,10 @@ async function main() {
             const word = words[wi];
             console.log(`Word ${seed}/${wi+1}`);
 
+            while (convIDs.length > 2)
+                await Promise.race(convPromises);
+
+            convIDs.push(wi);
             convPromises.push((async () => {
                 // Full dictionary
                 const dj = `game/assets/${seed}/w${wi}`;
@@ -153,6 +157,11 @@ async function main() {
                 } catch (ex) {
                     valid = false;
                 }
+
+                // And mark ourself done
+                const idx = convIDs.indexOf(wi);
+                convIDs.splice(idx, 1);
+                convPromises.splice(idx, 1);
             })());
         }
         await Promise.all(convPromises);
