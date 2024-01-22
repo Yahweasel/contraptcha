@@ -448,7 +448,6 @@ diversity
 divorce
 dock
 doctor
-doctrine
 document
 documentary
 doe
