@@ -139,6 +139,7 @@ a:hover {
 
 .mainbtn {
     flex: 1;
+    width: 100%;
     appearance: none;
     background-color: #339;
     border: 2px solid #999;
@@ -153,6 +154,10 @@ a:hover {
 
 .mainbtn:active {
     background-color: #339;
+}
+
+.menubtn {
+    margin-top: 0.5em;
 }
 
 #panelguard {

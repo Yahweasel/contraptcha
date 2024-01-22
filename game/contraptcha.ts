@@ -44,6 +44,7 @@ declare let textMetrics: any;
     const loadingPanel = gebi("loadingpanel");
     const helpPanel = gebi("helppanel");
     const creditsPanel = gebi("creditspanel");
+    const menuPanel = gebi("menupanel");
     const msgPanel = gebi("messagepanel");
     const msgPanelMsg = gebi("messagepanelmessage");
     const imgPanel = gebi("imgpanel");
@@ -78,7 +79,8 @@ declare let textMetrics: any;
         guessVals: [string, number][][],
         guessWords: Record<string, boolean>[],
         score: number,
-        retried: boolean
+        retried: boolean,
+        gaveUp: boolean
     } | null = null;
 
     const hidden: boolean[] = [];
@@ -108,7 +110,8 @@ declare let textMetrics: any;
                 guessVals: [],
                 guessWords: [],
                 score: 100,
-                retried: false
+                retried: false,
+                gaveUp: false
             };
         }
 
@@ -385,7 +388,8 @@ declare let textMetrics: any;
                 bgColor = `rgb(33% ${sim * 33}% 0%)`;
             drawWordGuess(
                 scoreDisp,
-                "" + state.score + (state.retried ? "*" : ""),
+                "" + state.score +
+                    ((state.retried || state.gaveUp) ? "*" : ""),
                 bgColor
             );
         }
@@ -554,6 +558,25 @@ declare let textMetrics: any;
         await drawWordGuesses();
     }
 
+    /**
+     * Give up on this game.
+     */
+    async function giveUp() {
+        if (state.score > 0) {
+            message("You can only give up once you've reached 0 score. Come on, give it a few more tries!");
+            return;
+        }
+
+        if (state.guessed.indexOf(false) < 0) {
+            // Giving up a game you've won?
+            return;
+        }
+
+        state.gaveUp = true;
+        for (const word of words)
+            await guess(word);
+    }
+
     // Choose the initial seed
     await chooseSeed();
 
@@ -583,11 +606,13 @@ declare let textMetrics: any;
     }
 
     // Set up the buttons
-    gebi("restartbtn").onclick = restart;
-    gebi("newbtn").onclick = newGame;
+    gebi("menubtn").onclick = () => panel(menuPanel);
     gebi("hintbtn").onclick = hint;
     gebi("helpbtn").onclick = () => panel(helpPanel);
     gebi("creditsbtn").onclick = () => panel(creditsPanel);
+    gebi("restartbtn").onclick = restart;
+    gebi("newbtn").onclick = newGame;
+    gebi("giveupbtn").onclick = giveUp;
 
     // And play the game
     winp.onkeydown = ev => {
@@ -619,6 +644,8 @@ declare let textMetrics: any;
                     return restart();
                 else if (cmd === "newgame" || cmd === "new")
                     return newGame();
+                else if (cmd === "giveup")
+                    return giveUp();
                 else if (cmd === "hint")
                     return hint();
                 else if (cmd === "help")

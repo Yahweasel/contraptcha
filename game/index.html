@@ -19,7 +19,7 @@
         <meta charset="utf8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Contraptcha</title>
-        <link rel="stylesheet" href="contraptcha.css?v=h" />
+        <link rel="stylesheet" href="contraptcha.css?v=i" />
     </head>
     <body>
         <div id="main" style="display: none;">
@@ -50,8 +50,7 @@
                 </div>
             </div>
             <div class="btnrow row">
-                <button id="restartbtn" class="mainbtn">Restart game</button>
-                <button id="newbtn" class="mainbtn">New game</button>
+                <button id="menubtn" class="mainbtn">Game</button>
                 <button id="hintbtn" class="mainbtn">Hint</button>
                 <button id="helpbtn" class="mainbtn">Help</button>
                 <button id="creditsbtn" class="mainbtn">Credits</button>
@@ -150,6 +149,13 @@
                 <p>Thanks to Wordle and Semantle for inspiration.</p>
             </div>
 
+            <div id="menupanel" class="panel">
+                <button class="close">x</button>
+                <button id="restartbtn" class="mainbtn menubtn">Restart game</button>
+                <button id="newbtn" class="mainbtn menubtn">New game</button>
+                <button id="giveupbtn" class="mainbtn menubtn">Give up</button>
+            </div>
+
             <div id="messagepanel" class="panel">
                 <button class="close">x</button>
                 <p id="messagepanelmessage"></p>
@@ -162,6 +168,6 @@
 
         <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/text-metrics@4.0.1/dist/text-metrics.js"></script>
-        <script type="text/javascript" src="contraptcha.js?v=s"></script>
+        <script type="text/javascript" src="contraptcha.js?v=t"></script>
     </body>
 </html>
