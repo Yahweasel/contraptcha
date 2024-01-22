@@ -36,7 +36,7 @@ async function main(args) {
         const conf = part[2];
 
         // Skip bad or irrelevant
-        if (conf < 0.05 ||
+        if (conf < 0.015625 ||
             txt.length < 3 ||
             !/[a-zA-Z]/.test(txt))
             continue;
