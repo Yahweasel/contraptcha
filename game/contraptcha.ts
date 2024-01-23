@@ -154,15 +154,17 @@ declare let textMetrics: any;
             state.guessWords.push(Object.create(null));
     }
 
+    interface ChooseSeedOpts {
+        ignoreURL?: boolean;
+        daily?: boolean;
+        setSeed?: number;
+    }
+
     /**
      * Choose a random seed (or the seed given by the URL) and load it.
      * @param ignoreURL  Don't use the seed in the URL.
      */
-    async function chooseSeed(opts: {
-        ignoreURL?: boolean,
-        daily?: boolean,
-        setSeed?: number
-    } = {}) {
+    async function chooseSeed(opts: ChooseSeedOpts = {}) {
         const url = new URL(document.location.href);
         seed = -1;
 
@@ -226,9 +228,11 @@ declare let textMetrics: any;
                 beatEveryPuzzle = true;
         }
 
-        url.hash = `#${seed}`;
-        url.search = "";
-        window.history.pushState({}, `??? — ${seed}`, url.toString());
+        if (url.hash !== `#${seed}` || url.search) {
+            url.hash = `#${seed}`;
+            url.search = "";
+            window.history.pushState({}, `??? — ${seed}`, url.toString());
+        }
 
         words = await loadJSON(`assets/${seed}/w.json`);
         similarity = Object.create(null);
@@ -587,13 +591,12 @@ declare let textMetrics: any;
     }
 
     /**
-     * Start a new game.
-     * @param daily  Specifically, the puzzle of the day.
+     * Start a new game with the given options.
      */
-    async function newGame(daily: boolean) {
+    async function newGame(opts: ChooseSeedOpts = {}) {
         hidden.fill(false);
         lastGuess = null;
-        await chooseSeed({ignoreURL: true, daily});
+        await chooseSeed(opts);
         await drawImages();
         await drawWordGuesses();
     }
@@ -693,11 +696,22 @@ declare let textMetrics: any;
     drawWordGuesses();
     mainBox.style.display = "";
     panelBox1.onclick = () => !modalPanel && panel(null);
+
+    // Handle events
     window.addEventListener("keydown", ev => {
         if (!modalPanel && (ev.key === "Escape" || ev.key === "Enter"))
             panel(null);
     });
     window.addEventListener("resize", () => drawWordGuesses());
+    window.addEventListener("popstate", async () => {
+        // Check for navigating to a different seed
+        const url = new URL(document.location.href);
+        if (url.hash.length > 1) {
+            const useed = +url.hash.slice(1);
+            if (useed !== seed)
+                await newGame({setSeed: useed});
+        }
+    });
 
     // Special circumstances
     if (beatEveryPuzzle) {
@@ -715,8 +729,8 @@ declare let textMetrics: any;
     gebi("helpbtn").onclick = () => panel(helpPanel);
     gebi("creditsbtn").onclick = () => panel(creditsPanel);
     gebi("restartbtn").onclick = restart;
-    gebi("dailybtn").onclick = () => newGame(true);
-    gebi("newbtn").onclick = () => newGame(false);
+    gebi("dailybtn").onclick = () => newGame({ignoreURL: true, daily: true});
+    gebi("newbtn").onclick = () => newGame({ignoreURL: true});
     gebi("statsbtn").onclick = stats;
     gebi("giveupbtn").onclick = giveUp;
 
@@ -749,9 +763,9 @@ declare let textMetrics: any;
                 if (cmd === "restart")
                     return restart();
                 else if (cmd === "daily")
-                    return newGame(true);
+                    return newGame({ignoreURL: true, daily: true});
                 else if (cmd === "newgame" || cmd === "new")
-                    return newGame(false);
+                    return newGame({ignoreURL: true});
                 else if (cmd === "stats")
                     return stats();
                 else if (cmd === "giveup")
