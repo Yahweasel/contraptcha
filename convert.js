@@ -131,7 +131,8 @@ async function main() {
                 const hw = h.createWriteStream();
                 const p = await cproc.spawn(
                     "semantic-distance/distance", [
-                        "GoogleNews-vectors-negative300.bin", word
+                        "semantic-distance/GoogleNews-vectors-negative300.bin",
+                        word
                     ], {
                         stdio: ["ignore", "pipe", "inherit"]
                     }
