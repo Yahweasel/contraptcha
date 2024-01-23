@@ -236,6 +236,13 @@ button.close:active {
     color: #fff;
 }
 
+#helppanel {
+    background: url("/assets/img/limeduck-bg-t.webp"), #222;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .statsbtn {
     appearance: none;
     background: none;
