@@ -3,6 +3,7 @@ easyocr/__pycache__/
 censor/out/
 game/assets/
 game/contraptcha.js
+game/favicon*
 generate/out/
 node_modules/
 package-lock.json
