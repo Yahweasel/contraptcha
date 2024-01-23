@@ -599,6 +599,12 @@ declare let textMetrics: any;
         await chooseSeed(opts);
         await drawImages();
         await drawWordGuesses();
+        if (
+            !("setSeed" in opts) && !opts.daily && opts.ignoreURL &&
+            beatEveryPuzzle
+        ) {
+            message("Congratulations! You've beaten every puzzle currently in the game!");
+        }
     }
 
     /**
@@ -714,9 +720,7 @@ declare let textMetrics: any;
     });
 
     // Special circumstances
-    if (beatEveryPuzzle) {
-        message("Congratulations! You've beaten every puzzle currently in the game!");
-    } else if (!(await lf.getItem("seen-help"))) {
+    if (!(await lf.getItem("seen-help"))) {
         panel(helpPanel);
         await lf.setItem("seen-help", true);
     } else {
