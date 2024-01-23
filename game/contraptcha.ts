@@ -109,15 +109,16 @@ declare let textMetrics: any;
             panel(loadingPanel, true);
         }, 500);
 
-        const f = await fetch(url);
-        const ret = await f.json();
-
-        if (timeout)
-            clearTimeout(timeout);
-        else
-            panel(null);
-
-        return ret;
+        try {
+            const f = await fetch(url);
+            const ret = await f.json();
+            return ret;
+        } finally {
+            if (timeout)
+                clearTimeout(timeout);
+            else
+                panel(null);
+        }
     }
 
     /**
@@ -159,16 +160,19 @@ declare let textMetrics: any;
      */
     async function chooseSeed(opts: {
         ignoreURL?: boolean,
+        daily?: boolean,
         setSeed?: number
     } = {}) {
         const url = new URL(document.location.href);
         seed = -1;
 
+        // Load the given seed
         if ("setSeed" in opts) {
             seed = opts.setSeed;
             await loadState();
         }
 
+        // Load the seed from the URL
         if (seed < 0 && !opts.ignoreURL) {
             if (url.hash.length >= 2) {
                 seed = +url.hash.slice(1);
@@ -182,9 +186,33 @@ declare let textMetrics: any;
             }
         }
 
-        // Choose a seed we haven't beaten yet
+        // Load the daily seed
+        if (seed < 0 && opts.daily) {
+            try {
+                seed = await loadJSON(
+                    "assets/daily.json?t=" +
+                    Math.floor(new Date().getTime() / 3600000 /* one hour */)
+                );
+                await loadState();
+            } catch (ex) {
+                console.error(ex);
+                seed = -1;
+            }
+        }
+
+        // Or, just choose a random (unbeaten) seed
         if (seed < 0) {
-            const seeds = await loadJSON("assets/seeds.json?v=x");
+            let dailySeeds: number[]; 
+            try {
+                dailySeeds = await loadJSON(
+                    "assets/dailies.json?t=" +
+                    Math.floor(new Date().getTime() / 86400000 /* one day */)
+                );
+            } catch (ex) {
+                dailySeeds = [];
+            }
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=y");
+            const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
                     break;
@@ -560,11 +588,12 @@ declare let textMetrics: any;
 
     /**
      * Start a new game.
+     * @param daily  Specifically, the puzzle of the day.
      */
-    async function newGame() {
+    async function newGame(daily: boolean) {
         hidden.fill(false);
         lastGuess = null;
-        await chooseSeed({ignoreURL: true});
+        await chooseSeed({ignoreURL: true, daily});
         await drawImages();
         await drawWordGuesses();
     }
@@ -653,7 +682,7 @@ declare let textMetrics: any;
     }
 
     // Choose the initial seed
-    await chooseSeed();
+    await chooseSeed({daily: true});
 
     // Set up the ability to hide words
     for (let wi = 0; wi < wordCt; wi++)
@@ -686,7 +715,8 @@ declare let textMetrics: any;
     gebi("helpbtn").onclick = () => panel(helpPanel);
     gebi("creditsbtn").onclick = () => panel(creditsPanel);
     gebi("restartbtn").onclick = restart;
-    gebi("newbtn").onclick = newGame;
+    gebi("dailybtn").onclick = () => newGame(true);
+    gebi("newbtn").onclick = () => newGame(false);
     gebi("statsbtn").onclick = stats;
     gebi("giveupbtn").onclick = giveUp;
 
@@ -718,8 +748,10 @@ declare let textMetrics: any;
                 const cmd = word.slice(1).toLowerCase();
                 if (cmd === "restart")
                     return restart();
+                else if (cmd === "daily")
+                    return newGame(true);
                 else if (cmd === "newgame" || cmd === "new")
-                    return newGame();
+                    return newGame(false);
                 else if (cmd === "stats")
                     return stats();
                 else if (cmd === "giveup")

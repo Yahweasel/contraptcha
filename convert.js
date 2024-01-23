@@ -45,8 +45,17 @@ async function main() {
         } catch (ex) {
             continue;
         }
+
+        let meta = {};
+        try {
+            meta = JSON.parse(await fs.readFile(
+                `generate/out/${seed}/meta.json`, "utf8"
+            ));
+        } catch (ex) {}
+
         let valid = true;
-        validSeeds.push(seed);
+        if (!meta.daily)
+            validSeeds.push(seed);
 
         const outWords = `game/assets/${seed}/w.json`;
         try {
@@ -216,8 +225,21 @@ async function main() {
         if (valid)
             await run(["cp", `generate/out/${seed}/${seed}.json`, outWords]);
         else {
-            validSeeds.pop();
+            if (!meta.daily)
+                validSeeds.pop();
             console.error(`Seed ${seed} invalid!`);
+        }
+
+        /* 7: Add it to the dailies list. The dailies list is a directory so
+         * that the conversion can run on one system while the daily selection
+         * runs on a different system, and they can synchronize in a
+         * straightforward way, never conflicting on a file. */
+        if (meta.daily) {
+            await run(["mkdir", "-p", "game/assets/dailies"]);
+            await fs.writeFile(
+                `game/assets/dailies/${seed}.json`,
+                JSON.stringify(seed)
+            );
         }
     }
 

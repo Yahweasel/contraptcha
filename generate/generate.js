@@ -35,8 +35,25 @@ const models = [
 const numWords = 6;
 
 async function main(args) {
-    if (args.length !== numWords) {
-        console.error(`Use: ./generate.js <${numWords} words>`);
+    // Handle arguments
+    let meta = null;
+    let words = [];
+
+    for (let ai = 0; ai < args.length; ai++) {
+        const arg = args[ai];
+        if (arg === "-m") {
+            const mstr = args[++ai];
+            if (mstr)
+                meta = JSON.parse(mstr);
+        } else if (arg[0] === "-") {
+            process.exit(1);
+        } else {
+            words.push(arg);
+        }
+    }
+
+    if (words.length !== numWords) {
+        console.error(`Use: ./generate.js [-m metadata] <${numWords} words>`);
         process.exit(1);
         return;
     }
@@ -52,7 +69,9 @@ async function main(args) {
         }
     } while (true);
     await fs.mkdir(`out/${seed}`);
-    await fs.writeFile(`out/${seed}/${seed}.json`, JSON.stringify(args));
+    await fs.writeFile(`out/${seed}/${seed}.json`, JSON.stringify(words));
+    if (meta)
+        fs.writeFile(`out/${seed}/meta.json`, JSON.stringify(meta));
 
     const promptText = await fs.readFile("workflow_api.json", "utf8");
     const prompt = JSON.parse(promptText);
@@ -63,7 +82,7 @@ async function main(args) {
             let parts = [];
             for (let i = 0; i < numWords; i++) {
                 if (!(chidx & (1<<i))) continue;
-                parts.push(args[i]);
+                parts.push(words[i]);
             }
             //console.log(parts);
             prompt[4].inputs.ckpt_name = models[si];
