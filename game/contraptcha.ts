@@ -101,6 +101,26 @@ declare let textMetrics: any;
     let modalPanel = false;
 
     /**
+     * Load this file as JSON, showing a loading screen if needed.
+     */
+    async function loadJSON(url: string) {
+        let timeout: number | null = setTimeout(() => {
+            timeout = null;
+            panel(loadingPanel, true);
+        }, 500);
+
+        const f = await fetch(url);
+        const ret = await f.json();
+
+        if (timeout)
+            clearTimeout(timeout);
+        else
+            panel(null);
+
+        return ret;
+    }
+
+    /**
      * Load the state for the current game. If the player hasn't played this
      * game, load a blank state.
      */
@@ -226,26 +246,6 @@ declare let textMetrics: any;
     function message(msg: string) {
         msgPanelMsg.innerHTML = msg;
         panel(msgPanel);
-    }
-
-    /**
-     * Load this file as JSON, showing a loading screen if needed.
-     */
-    async function loadJSON(url: string) {
-        let timeout: number | null = setTimeout(() => {
-            timeout = null;
-            panel(loadingPanel, true);
-        }, 500);
-
-        const f = await fetch(url);
-        const ret = await f.json();
-
-        if (timeout)
-            clearTimeout(timeout);
-        else
-            panel(null);
-
-        return ret;
     }
 
     /**
