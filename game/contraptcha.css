@@ -113,6 +113,7 @@ a:hover {
 
 #wordinput {
     flex: auto;
+    max-width: 83.33%;
     margin: 0.2em 0 0.2em 0;
     background-color: #111;
     color: #aaa;
