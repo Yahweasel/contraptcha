@@ -183,15 +183,13 @@ declare let textMetrics: any;
 
         // Load the seed from the URL
         if (seed < 0 && !opts.ignoreURL) {
-            if (url.hash.length >= 2) {
+            const paramSeed = url.searchParams.get("s");
+            if (paramSeed) {
+                seed = +paramSeed;
+                await loadState();
+            } else if (url.hash.length >= 2) {
                 seed = +url.hash.slice(1);
                 await loadState();
-            } else {
-                const paramSeed = url.searchParams.get("s");
-                if (paramSeed) {
-                    seed = +paramSeed;
-                    await loadState();
-                }
             }
         }
 
@@ -220,7 +218,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=y");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=14");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -235,9 +233,9 @@ declare let textMetrics: any;
                 beatEveryPuzzle = true;
         }
 
-        if (url.hash !== `#${seed}` || url.search) {
-            url.hash = `#${seed}`;
-            url.search = "";
+        if (url.hash || url.search !== `?s=${seed}`) {
+            url.hash = "";
+            url.search = `?s=${seed}`;
             window.history.pushState({}, `??? — ${seed}`, url.toString());
         }
 
@@ -741,12 +739,16 @@ declare let textMetrics: any;
     window.addEventListener("resize", () => drawWordGuesses());
     window.addEventListener("popstate", async () => {
         // Check for navigating to a different seed
+        let useed = seed;
         const url = new URL(document.location.href);
-        if (url.hash.length > 1) {
-            const useed = +url.hash.slice(1);
-            if (useed !== seed)
-                await newGame({setSeed: useed});
-        }
+        const paramSeed = url.searchParams.get("s");
+        if (paramSeed)
+            useed = +paramSeed;
+        else if (url.hash.length > 1)
+            useed = +url.hash.slice(1);
+
+        if (useed !== seed)
+            await newGame({setSeed: useed});
     });
 
     // Special circumstances
