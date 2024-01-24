@@ -104,20 +104,27 @@ declare let textMetrics: any;
      * Load this file as JSON, showing a loading screen if needed.
      */
     async function loadJSON(url: string) {
+        let endPromise: Promise<unknown> | null = null;
         let timeout: number | null = setTimeout(() => {
             timeout = null;
             panel(loadingPanel, true);
-        }, 500);
+
+            /* It's annoying for the loading screen to flash quickly, so make
+             * sure it stays up for at least one second. */
+            endPromise = new Promise(res => setTimeout(res, 1000));
+        }, 1000);
 
         try {
             const f = await fetch(url);
             const ret = await f.json();
             return ret;
         } finally {
-            if (timeout)
+            if (timeout) {
                 clearTimeout(timeout);
-            else
+            } else {
+                await endPromise;
                 panel(null);
+            }
         }
     }
 
