@@ -725,6 +725,12 @@ declare let textMetrics: any;
     drawWordGuesses();
     mainBox.style.display = "";
     panelBox1.onclick = () => !modalPanel && panel(null);
+    {
+        const btns = document.getElementsByClassName("close");
+        for (let i = 0; i < btns.length; i++)
+            (<HTMLElement> btns[i]).onclick = () => !modalPanel && panel(null);
+    }
+    panelBox3.onclick = ev => ev.stopPropagation();
 
     // Handle events
     window.addEventListener("keydown", ev => {
@@ -756,10 +762,19 @@ declare let textMetrics: any;
     gebi("helpbtn").onclick = () => panel(helpPanel);
     gebi("creditsbtn").onclick = () => panel(creditsPanel);
     gebi("restartbtn").onclick = restart;
-    gebi("dailybtn").onclick = () => newGame({ignoreURL: true, daily: true});
-    gebi("newbtn").onclick = () => newGame({ignoreURL: true});
+    gebi("dailybtn").onclick = () => {
+        panel(null);
+        newGame({ignoreURL: true, daily: true});
+    };
+    gebi("newbtn").onclick = () => {
+        panel(null);
+        newGame({ignoreURL: true});
+    };
     gebi("statsbtn").onclick = stats;
-    gebi("giveupbtn").onclick = giveUp;
+    gebi("giveupbtn").onclick = () => {
+        panel(null);
+        giveUp();
+    };
 
     // And play the game
     winp.onkeydown = ev => {

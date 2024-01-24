@@ -219,11 +219,12 @@ a:hover {
 
 button.close {
     position: absolute;
-    right: 1em;
-    top: 0.1em;
+    right: 0.4rem;
+    top: -0.8rem;
     appearance: none;
     background: none;
     border: none;
+    font-size: 2em;
     color: #888;
     cursor: pointer;
 }
