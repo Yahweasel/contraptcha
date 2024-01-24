@@ -219,6 +219,10 @@ async function main() {
                 `game/assets/${seed}/w-${c}.json`,
                 JSON.stringify(distance)
             );
+
+            // We now don't need the split dictionary
+            for (let wi = 0; wi < words.length; wi++)
+                await fs.unlink(`game/assets/${seed}/w${wi}-${c}.json`);
         }
 
         // 6: Write out the wordlist
