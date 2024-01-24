@@ -538,9 +538,25 @@ declare let textMetrics: any;
      * Give a hint.
      */
     async function hint() {
-        let wi = Math.floor(Math.random() * wordCt);
-        if (lastGuess)
+        // Choose the word to hint in
+        let wi: number;
+        if (lastGuess) {
+            // Simple: most recent word
             wi = lastGuess[0];
+
+        } else {
+            // An unguessed word
+            const unguessed = [];
+            for (let ui = 0; ui < wordCt; ui++) {
+                if (!state.guessed[ui])
+                    unguessed.push(ui);
+            }
+            if (!unguessed.length)
+                return;
+            wi = unguessed[Math.floor(Math.random() * unguessed.length)];
+        }
+
+        // Get the hint file
         if (!hintFiles[wi])
             hintFiles[wi] = await loadJSON(`assets/${seed}/w${wi}-top.json`);
 
