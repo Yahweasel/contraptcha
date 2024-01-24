@@ -675,6 +675,7 @@ declare let textMetrics: any;
                 img.classList.add("statsimg");
                 btn.appendChild(img);
                 btn.onclick = async () => {
+                    panel(null);
                     await chooseSeed({setSeed: gSeed});
                     await drawImages();
                     await drawWordGuesses();
