@@ -252,6 +252,8 @@ button.close:active {
     cursor: pointer;
     opacity: 0.85;
     margin: 0.25em;
+    color: #999;
+    font-weight: bold;
 }
 
 .statsbtn:hover {
