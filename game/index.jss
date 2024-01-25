@@ -14,7 +14,22 @@
  * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 -->
-<html>
+<?JS
+const fs = require("fs");
+let seed = -1, img = null;
+if (request.query && request.query.s)
+    seed = +request.query.s;
+if (seed >= 0) {
+    try {
+        img = `/assets/${seed}/0_3f.webp`;
+        fs.accessSync(`/var/www/html${img}`, fs.constants.R_OK);
+    } catch (ex) {
+        seed = -1;
+        img = null;
+    }
+}
+?>
+<html prefix="og: https://ogp.me/ns#">
     <head>
         <meta charset="utf8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,6 +43,14 @@
         <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg" color="#5bbad5" />
         <meta name="msapplication-TileColor" content="#da532c" />
         <meta name="theme-color" content="#ffffff" />
+
+        <meta property="og:title" content="Contraptcha" />
+        <meta property="og:type" content="website" />
+        <meta property="og:description" content="A word puzzle game inspired by AI-generated art and CAPTCHAs." />
+        <meta property="og:url" content="https://contraptcha.com/<?JS= (seed >= 0) ? `?s=${seed}` : "" ?>" />
+        <meta property="og:image" content="https://contraptcha.com<?JS= img || "/assets/img/limeduck-bg.webp" ?>" />
+        <meta property="og:image:type" content="image/webp" />
+        <meta property="og:image:alt" content="An AI-generated puzzle image" />
     </head>
     <body>
         <div id="main" style="display: none;">
