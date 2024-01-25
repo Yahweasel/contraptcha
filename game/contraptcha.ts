@@ -316,6 +316,17 @@ declare let textMetrics: any;
     }
 
     /**
+     * Convert a value to a red-green color.
+     */
+    function toRGB(val: number) {
+        val = Math.max(Math.min(val, 1), 0);
+        if (val > 0.5)
+            return `rgb(${(1 - val) * 33}% 33% 0%)`;
+        else
+            return `rgb(33% ${val * 33}% 0%)`;
+    }
+
+    /**
      * Draw a single word guess element.
      */
     function drawWordGuess(
@@ -397,7 +408,6 @@ declare let textMetrics: any;
                 const text =
                     `${guess[0].toUpperCase()}: ${Math.round(guess[1]*100)}`;
                 let bgColor: string, fgColor: string = "";
-                const sim = Math.min(guess[1] / 0.8, 1);
                 if (wasLastGuess) {
                     bgColor = "#999";
                     fgColor = "#000";
@@ -407,15 +417,8 @@ declare let textMetrics: any;
                          * from showing #4 */
                         repeatLastGuess = true;
                     }
-                } else if (sim > 0.5) {
-                    bgColor = "rgb(" +
-                        (1 - sim) * 33 + "% " +
-                        "33% 0%)";
                 } else {
-                    bgColor = "rgb(" +
-                        "33% " +
-                        sim * 33 + "% " +
-                        "0%)";
+                    bgColor = toRGB(guess[1] / 0.8);
                 }
                 drawWordGuess(row, text, bgColor, fgColor);
 
@@ -427,20 +430,12 @@ declare let textMetrics: any;
         }
 
         // Also draw the score while we're here
-        {
-            const sim = Math.max(state.score / 100, 0);
-            let bgColor: string;
-            if (sim > 0.5)
-                bgColor = `rgb(${(1 - sim) * 33}% 33% 0%)`;
-            else
-                bgColor = `rgb(33% ${sim * 33}% 0%)`;
-            drawWordGuess(
-                scoreDisp,
-                "" + state.score +
-                    ((state.retried || state.gaveUp) ? "*" : ""),
-                bgColor
-            );
-        }
+        drawWordGuess(
+            scoreDisp,
+            "" + state.score +
+                ((state.retried || state.gaveUp) ? "*" : ""),
+            toRGB(state.score / 100)
+        );
     }
 
     /**
