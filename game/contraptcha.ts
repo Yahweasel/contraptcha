@@ -218,7 +218,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=14");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=16");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -675,9 +675,7 @@ declare let textMetrics: any;
                 btn.appendChild(score);
                 btn.onclick = async () => {
                     panel(null);
-                    await chooseSeed({setSeed: gSeed});
-                    await drawImages();
-                    await drawWordGuesses();
+                    await newGame({setSeed: gSeed});
                 };
                 if (gState.guessed.indexOf(false) < 0)
                     completed.push(btn);
