@@ -667,6 +667,12 @@ declare let textMetrics: any;
                 img.src = `assets/${gSeed}/thumb.webp`;
                 img.classList.add("statsimg");
                 btn.appendChild(img);
+                const score = dce("div");
+                score.innerText =
+                    gState.score +
+                    ((gState.retried || gState.gaveUp) ? "*" : "");
+                score.style.backgroundColor = toRGB(gState.score / 100);
+                btn.appendChild(score);
                 btn.onclick = async () => {
                     panel(null);
                     await chooseSeed({setSeed: gSeed});

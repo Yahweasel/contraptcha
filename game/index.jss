@@ -34,7 +34,7 @@ if (seed >= 0) {
         <meta charset="utf8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Contraptcha</title>
-        <link rel="stylesheet" href="contraptcha.css?v=n" />
+        <link rel="stylesheet" href="contraptcha.css?v=o" />
 
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
@@ -213,6 +213,6 @@ if (seed >= 0) {
 
         <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/text-metrics@4.0.1/dist/text-metrics.js"></script>
-        <script type="text/javascript" src="contraptcha.js?v=15"></script>
+        <script type="text/javascript" src="contraptcha.js?v=16"></script>
     </body>
 </html>
