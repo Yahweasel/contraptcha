@@ -20,7 +20,6 @@ nsfw = {
     "BUTTOCKS_EXPOSED", "FEMALE_BREAST_EXPOSED", "FEMALE_GENITALIA_EXPOSED",
     "ANUS_EXPOSED", "MALE_GENITALIA_EXPOSED"
 }
-results = nd.detect(sys.argv[1])
 ret = 0
 for file in sys.argv[1:]:
     results = nd.detect(file)
