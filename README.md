@@ -53,6 +53,16 @@ is always two hex digits.
 `generate.js` can also create a `meta.json` file.
 
 
+### NSFW detection
+
+NSFW imagery is detected by [NudeNet](https://github.com/notAI-tech/NudeNet).
+NudeNet must be installed to a virtualenv directory named `nsfw/venv`. It can be
+installed with `pip -r requirements.txt`.
+
+The NSFW detector is called automatically by `generate.js`. You should not need
+to run it explicitly.
+
+
 ### OCR
 
 OCR is performed by [EasyOCR](https://github.com/JaidedAI/EasyOCR). EasyOCR must
