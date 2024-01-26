@@ -21,12 +21,14 @@
  * possible, but maybe not straightforward, to adapt it to ComfyUI directly.
  */
 
-const cproc = require("child_process");
 const fs = require("fs/promises");
+
+const genImg = require("./generate-img.js");
 
 const backends = [
     "http://127.0.0.1:7821"
 ];
+
 const models = [
     "juggernautXL_v8Rundiffusion.safetensors",
     "realvisxlV30Turbo_v30Bakedvae.safetensors",
@@ -34,46 +36,6 @@ const models = [
     "OfficialStableDiffusion/sd_xl_base_1.0.safetensors"
 ];
 const numWords = 6;
-
-/**
- * Send this prompt to the AI.
- */
-async function sendPrompt(prompt, idx) {
-    const f = await fetch(backends[idx % backends.length] + "/prompt", {
-        method: "POST",
-        headers: {"content-type": "application/json"},
-        body: JSON.stringify({prompt})
-    });
-    await f.text();
-}
-
-/**
- * Wait for this file to exist.
- */
-async function waitForFile(name) {
-    while (true) {
-        try {
-            await fs.access(name, fs.constants.F_OK);
-            break;
-        } catch (ex) {}
-        await new Promise(res => setTimeout(res, 1000));
-    }
-    await new Promise(res => setTimeout(res, 1000));
-}
-
-function run(cmd) {
-    return new Promise(res => {
-        const p = cproc.spawn(cmd[0], cmd.slice(1), {
-            stdio: ["ignore", "inherit", "inherit"]
-        });
-        p.on("exit", (code, signal) => {
-            if (code === null)
-                res(-1);
-            else
-                res(code);
-        });
-    });
-}
 
 async function main(args) {
     // Handle arguments
@@ -135,19 +97,10 @@ async function main(args) {
             const id = `${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
             ids.push(id);
             promises.push((async () => {
-                const oname = `out/${seed}/${id}_`;
+                const oname = `out/${seed}/${id}`;
                 await new Promise(res => setTimeout(res, 0));
 
                 try {
-                    // Check if it's already been made
-                    let exists = false;
-                    try {
-                        await fs.access(`${oname}00001_.png`, fs.constants.F_OK);
-                        exists = true;
-                    } catch (ex) {}
-                    if (exists)
-                        return;
-
                     console.log(oname);
 
                     // Make the prompt
@@ -158,46 +111,16 @@ async function main(args) {
                     }
                     const prompt = JSON.parse(promptText);
                     prompt[4].inputs.ckpt_name = models[si];
-                    prompt[9].inputs.filename_prefix = `out/${seed}/${id}`;
+                    prompt[9].inputs.filename_prefix = oname;
                     prompt[10].inputs.noise_seed = seed + si;
                     prompt[101].inputs.text = parts.join(", ");
                     prompt[102].inputs.text = "text, watermark, nsfw, penis, vagina, breasts";
-                    await sendPrompt(prompt, chidx);
 
-                    // Wait for it to exist
-                    await waitForFile(`${oname}00001_.png`);
-
-                    // Check if it's NSFW
-                    const nsfw1 = await run([
-                        "../nsfw/venv/bin/python3", "../nsfw/nsfw-detect.py",
-                        `${oname}00001_.png`
-                    ]);
-                    if (!nsfw1) return;
-
-                    //console.log(`${oname} nsfw, regenerating...`);
-
-                    // OK, add "sfw" to the prompt then...
-                    await fs.rename(`${oname}00001_.png`, `${oname}nsfw.png`);
-                    prompt[101].inputs.text += ", sfw";
-                    await sendPrompt(prompt, chidx);
-                    await waitForFile(`${oname}00001_.png`);
-
-                    // Still NSFW?
-                    const nsfw2 = await run([
-                        "../nsfw/venv/bin/python3", "../nsfw/nsfw-detect.py",
-                        `${oname}00001_.png`
-                    ]);
-                    if (!nsfw2) return;
-
-                    //console.log(`${oname} still nsfw, censoring...`);
-
-                    // OK, give up, just censor-bar it
-                    await fs.rename(`${oname}00001_.png`, `${oname}uncensored.png`);
-                    await run([
-                        "../nsfw/venv/bin/python3",
-                        "../nsfw/nsfw-censor.py",
-                        `${oname}uncensored.png`, `${oname}00001_.png`
-                    ]);
+                    await genImg.generateImg(
+                        oname,
+                        backends[chidx % backends.length],
+                        prompt, 101
+                    );
 
                 } finally {
                     const idx = ids.indexOf(id);
