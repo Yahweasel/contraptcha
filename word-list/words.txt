@@ -154,7 +154,6 @@ bone
 book
 bookmark
 boot
-booty
 border
 boss
 bottle
