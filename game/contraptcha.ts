@@ -310,8 +310,7 @@ declare let textMetrics: any;
                 panelGuard.style.display = "";
                 imgPanel.style.display = "";
                 imgPanel.onclick = imgPanelImg.onclick = () => {
-                    panelGuard.style.display = "none";
-                    imgPanel.style.display = "none";
+                    panel(null);
                 };
             };
         }
