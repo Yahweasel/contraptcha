@@ -268,3 +268,51 @@ button.close:active {
     width: 8em;
     vertical-align: bottom;
 }
+
+.sadbox {
+    display: none;
+}
+
+@media screen and (min-width: 70rem) {
+    .sadbox {
+        display: block;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+    }
+
+    #ad1box {
+        left: calc(50% - 36rem);
+        right: calc(50% + 28rem);
+    }
+
+    #ad2box {
+        left: calc(50% + 28rem);
+        right: calc(50% - 36rem);
+    }
+
+    .sad {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+
+.badbox {
+    display: none;
+}
+
+@media screen and (max-width: 70rem) {
+    .badbox {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: 8em;
+    }
+
+    .bad {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}

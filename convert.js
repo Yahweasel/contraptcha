@@ -35,6 +35,11 @@ async function main() {
         dictionary[word] = true;
     }
 
+    const convCt = os.cpus().length;
+    let convIDs = [];
+    let convPromises = [];
+
+    // Convert all the seeds
     const validSeeds = [];
     for (const file of await fs.readdir("generate/out")) {
         const seed = parseInt(file);
@@ -68,9 +73,6 @@ async function main() {
         await run(["mkdir", "-p", `censor/out/${seed}`]);
 
         // 2: Convert the PNG files
-        const convCt = os.cpus().length;
-        let convIDs = [];
-        let convPromises = [];
         pngloop: for (let si = 0; ; si++) {
             for (let pi = 1; ; pi++) {
                 const pis = pi.toString(16).padStart(2, "0");
@@ -196,6 +198,7 @@ async function main() {
             })());
         }
         await Promise.all(convPromises);
+        convIDs = [];
         convPromises = [];
 
         // 5: Recombine distance lists
@@ -261,5 +264,44 @@ async function main() {
 
     // Write out the list of seeds
     await fs.writeFile("game/assets/seeds.json", JSON.stringify(validSeeds));
+
+    // Convert the ads
+    await run(["mkdir", "-p", "game/assets/ads"]);
+    for (const file of await fs.readdir("generate/out/ads")) {
+        if (!/_00001_\.png$/.test(file))
+            continue;
+        const inf = `generate/out/ads/${file}`;
+        const outf = `game/assets/ads/${file.replace("_00001_.png", ".webp")}`;
+
+        try {
+            await fs.access(outf, fs.constants.F_OK);
+            continue;
+        } catch (ex) {}
+
+        while (convIDs.length >= convCt)
+            await Promise.race(convPromises);
+
+        convIDs.push(outf);
+        convPromises.push((async () => {
+            console.log(outf);
+            await run([
+                "convert", inf,
+                "-resize", "720x720",
+                "-quality", "66",
+                outf
+            ]);
+            await run([
+                "/bin/sh", "-c",
+                `exiftool ${inf} -Prompt -j > ${outf}.json`
+            ]);
+
+            const idx = convIDs.indexOf(outf);
+            convIDs.splice(idx, 1);
+            convPromises.splice(idx, 1);
+        })());
+    }
+    await Promise.all(convPromises);
+    convIDs = [];
+    convPromises = [];
 }
 main();

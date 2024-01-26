@@ -52,6 +52,8 @@ declare let textMetrics: any;
     const imgPanel = gebi("imgpanel");
     const imgPanelImg = gebi("imgpanelimg");
 
+    let adTargets: string[] | null = null;
+
     let mainPromise: Promise<unknown> = Promise.all([]);
 
     // Create an image for each imgBox
@@ -218,7 +220,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=16");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=1a");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -711,6 +713,33 @@ declare let textMetrics: any;
         panel(statsPanel);
     }
 
+    /**
+     * Configure the "ads" (the ads are just AI-generated nonsense).
+     */
+    async function configAds() {
+        const time = new Date().getTime();
+
+        if (!adTargets) {
+            try {
+                adTargets = await loadJSON("/assets/ad-targets.json?v=1");
+            } catch (ex) {
+                adTargets = [];
+            }
+        }
+        if (!adTargets.length)
+            return;
+
+        for (const ad of [
+            ["ad1", "s"], ["ad2", "s"], ["ad3", "b"]
+        ]) {
+            const a = gebi(`${ad[0]}a`);
+            const img = gebi(ad[0]);
+            a.href = adTargets[Math.floor(Math.random() * adTargets.length)];
+            img.src = `/scripts/ad.jss?i=${ad[0]}&t=${ad[1]}&r=${time}`;
+            img.style.display = "block";
+        }
+    }
+
     // Choose the initial seed
     await chooseSeed({daily: true});
 
@@ -729,6 +758,9 @@ declare let textMetrics: any;
             (<HTMLElement> btns[i]).onclick = () => !modalPanel && panel(null);
     }
     panelBox3.onclick = ev => ev.stopPropagation();
+
+    configAds();
+    setInterval(configAds, 5 * 60 * 1000);
 
     // Handle events
     window.addEventListener("keydown", ev => {
