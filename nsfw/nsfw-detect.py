@@ -25,10 +25,9 @@ for file in sys.argv[1:]:
     results = nd.detect(file)
     total = 0
     for result in results:
-        if result["class"] in nsfw and result["score"] >= 0.5:
-            score = (result["score"] - 0.5) / 0.5
-            total = total + (1-total) * score
-    if total >= 0.5:
+        if result["class"] in nsfw:
+            total = total + (1-total) * result["score"]
+    if total >= 0.75:
         #print(file)
         #print(total)
         #print(results)
