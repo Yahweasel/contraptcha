@@ -1,4 +1,5 @@
 #!/bin/sh
+rm -f STOP
 ct=0
 while [ ! -e STOP ]
 do
