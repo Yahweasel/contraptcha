@@ -322,10 +322,13 @@ declare let textMetrics: any;
      */
     function toRGB(val: number) {
         val = Math.max(Math.min(val, 1), 0);
+        /* NOTE: This is mathematically wrong, but looks better than the
+         * mathematically correct option, since the in-between colors this dark
+         * just look gross. */
         if (val > 0.5)
-            return `rgb(${(1 - val) * 33}% 33% 0%)`;
+            return `rgb(${(1 - val) * 50}% 33% 0%)`;
         else
-            return `rgb(33% ${val * 33}% 0%)`;
+            return `rgb(33% ${val * 50}% 0%)`;
     }
 
     /**
