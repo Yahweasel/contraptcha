@@ -19,20 +19,20 @@ const fs = require("fs/promises");
 let type = "b";
 if (request.query && request.query.t && request.query.t === "s")
     type = "s";
-const inFiles = await fs.readdir(`${__dirname}/../assets/ads`);
-const files = [];
-while (inFiles.length) {
-    const idx = Math.floor(Math.random() * inFiles.length);
-    files.push(inFiles[idx]);
-    inFiles.splice(idx, 1);
-}
-for (const file of files) {
+const files = await fs.readdir(`${__dirname}/../assets/ads`);
+while (files.length) {
+    const idx = Math.floor(Math.random() * files.length);
+    const file = files[idx];
     if (type === "s") {
-        if (!/_sad\.webp$/.test(file))
+        if (!/_sad\.webp$/.test(file)) {
+            files.splice(idx, 1);
             continue;
+        }
     } else { // banner
-        if (!/_bad\.webp$/.test(file))
+        if (!/_bad\.webp$/.test(file)) {
+            files.splice(idx, 1);
             continue;
+        }
     }
     return writeHead(302, {location: `/assets/ads/${file}`});
 }
