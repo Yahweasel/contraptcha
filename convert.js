@@ -104,6 +104,7 @@ async function main() {
                         inFile, cFile
                     ]);
                     await run(["convert", cFile, "-quality", "66", outFile]);
+                    await fs.unlink(cFile);
 
                     const idx = convIDs.indexOf(outFile);
                     convIDs.splice(idx, 1);
