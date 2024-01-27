@@ -752,7 +752,6 @@ declare let textMetrics: any;
             const gct = state.guessesPerWord[wi];
             const hct = state.hintsPerWord[wi];
             stats +=
-                `Word ${wi+1}: ` +
                 (guessed[wi] ? "🟩" : "🟥") +
                 ` (${gct} guess${(gct === 1) ? "" : "es"}`;
             if (hct)
