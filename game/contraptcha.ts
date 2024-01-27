@@ -84,7 +84,12 @@ declare let textMetrics: any;
         guessWords: Record<string, boolean>[],
         score: number,
         retried: boolean,
-        gaveUp: boolean
+        gaveUp: boolean,
+
+        guessesPerWord: number[],
+        hintsPerWord: number[];
+        retries: number,
+        gaveUpGuessed: boolean[] | null
     } | null = null;
 
     const hidden: boolean[] = [];
@@ -143,7 +148,11 @@ declare let textMetrics: any;
                 guessWords: [],
                 score: 100,
                 retried: false,
-                gaveUp: false
+                gaveUp: false,
+                guessesPerWord: [],
+                hintsPerWord: [],
+                retries: 0,
+                gaveUpGuessed: null
             };
         }
 
@@ -152,15 +161,23 @@ declare let textMetrics: any;
             state.score = 100;
             state.retried = false;
         }
+        if (!("guessesPerWord" in <any> state)) {
+            state.guessesPerWord = [];
+            state.hintsPerWord = [];
+            state.retries = 0;
+            state.gaveUpGuessed = null;
+        }
 
         while (state.guessed.length < wordCt)
             state.guessed.push(false);
-
         while (state.guessVals.length < wordCt)
             state.guessVals.push([]);
-
         while (state.guessWords.length < wordCt)
             state.guessWords.push(Object.create(null));
+        while (state.guessesPerWord.length < wordCt)
+            state.guessesPerWord.push(0);
+        while (state.hintsPerWord.length < wordCt)
+            state.hintsPerWord.push(0);
     }
 
     interface ChooseSeedOpts {
@@ -220,7 +237,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=1a");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=1f");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -476,6 +493,7 @@ declare let textMetrics: any;
         if (gotIt >= 0 && !state.guessed[gotIt]) {
             state.guessed[gotIt] = true;
             state.guessVals[gotIt] = [];
+            state.guessesPerWord[gotIt]++;
             lastGuess = null;
             hidden.fill(false);
             drawImages();
@@ -527,6 +545,7 @@ declare let textMetrics: any;
             state.guessVals[mostIdx].push(lastGuess[1]);
             state.guessVals[mostIdx].sort((x, y) => y[1] - x[1]);
             state.guessWords[mostIdx][word] = true;
+            state.guessesPerWord[mostIdx]++;
 
             // And affect the score
             if (typeof scoreChange !== "number")
@@ -587,6 +606,7 @@ declare let textMetrics: any;
         // Affect the score
         hintValue = Math.round(hintValue * 100);
         const scoreChange = Math.floor(hintValue / 10) * 3;
+        state.hintsPerWord[wi]++;
 
         guess(hintWord, scoreChange);
     }
@@ -603,6 +623,7 @@ declare let textMetrics: any;
         }
         state.score = 100;
         state.retried = true;
+        state.retries++;
         lastGuess = null;
         await saveState();
         drawImages();
@@ -642,6 +663,7 @@ declare let textMetrics: any;
         }
 
         state.gaveUp = true;
+        state.gaveUpGuessed = state.guessed.slice(0);
         for (let wi = 0; wi < words.length; wi++) {
             if (!state.guessed[wi])
                 await guess(words[wi]);
@@ -649,7 +671,7 @@ declare let textMetrics: any;
     }
 
     /**
-     * Show game stats.
+     * Show game stats (NOTE: this is the stats for *all* games).
      */
     async function stats() {
         panel(loadingPanel, true);
@@ -713,6 +735,54 @@ declare let textMetrics: any;
         }
 
         panel(statsPanel);
+    }
+
+    /**
+     * Copy the stats for this game.
+     */
+    async function copyStats() {
+        // Generate our stats code
+        let stats =
+            `Contraptcha seed #${seed}\n` +
+            `https://contraptcha.com/?s=${seed}\n\n` +
+            `Score: ${state.score}${(state.retried || state.gaveUp) ? "*" : ""}\n\n`;
+
+        let guessed = state.gaveUpGuessed || state.guessed;
+        for (let wi = 0; wi < wordCt; wi++) {
+            const gct = state.guessesPerWord[wi];
+            const hct = state.hintsPerWord[wi];
+            stats +=
+                `Word ${wi+1}: ` +
+                (guessed[wi] ? "🟩" : "🟥") +
+                ` (${gct} guess${(gct === 1) ? "" : "es"}`;
+            if (hct)
+                stats += `, ${hct} hint${(hct === 1) ? "" : "s"}`;
+            stats += `)\n`;
+        }
+
+        if (state.retries || state.gaveUpGuessed)
+            stats += "\n";
+
+        if (state.retries)
+            stats += `Retried ${state.retries} times\n`;
+
+        if (state.gaveUpGuessed)
+            stats += `Gave up with ${state.gaveUpGuessed.filter(x => !x).length} words left\n`;
+
+        // Copy it via a textarea
+        const statsTE: HTMLTextAreaElement = dce("textarea");
+        Object.assign(statsTE.style, {
+            position: "fixed",
+            left: "101vw",
+            top: "101vh"
+        });
+        document.body.appendChild(statsTE);
+        statsTE.innerHTML = stats;
+        statsTE.select();
+        document.execCommand("copy");
+        document.body.removeChild(statsTE);
+
+        message("Puzzle stats copied to clipboard.");
     }
 
     /**
@@ -811,6 +881,8 @@ declare let textMetrics: any;
         panel(null);
         giveUp();
     };
+    scoreDisp.onclick = copyStats;
+    gebi("copystatsbtn").onclick = copyStats;
 
     // And play the game
     winp.onkeydown = ev => {
@@ -846,6 +918,8 @@ declare let textMetrics: any;
                     return newGame({ignoreURL: true});
                 else if (cmd === "stats")
                     return stats();
+                else if (cmd === "copy")
+                    return copyStats();
                 else if (cmd === "giveup")
                     return giveUp();
                 else if (cmd === "hint")
