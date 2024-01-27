@@ -45,7 +45,8 @@ async function main() {
         const seed = parseInt(file);
         try {
             await fs.access(
-                `generate/out/${seed}/${seed}.json`, fs.constants.F_OK
+                `generate/out/${seed}/${seed+3}_3f_00001_.png.ocr.json`,
+                fs.constants.F_OK
             );
         } catch (ex) {
             continue;
@@ -123,7 +124,17 @@ async function main() {
             `game/assets/${seed}/thumb.webp`
         ]);
 
-        // 4: Process all the words
+        // 4: Provide the prompt metadata
+        console.log("prompt.json.xz");
+        await run([
+            "/bin/sh", "-c",
+            `exiftool -Prompt -json ` +
+            `generate/out/${seed}/*.png ` +
+            `| xz > ` +
+            `game/assets/${seed}/prompt.json.xz`
+        ]);
+
+        // 5: Process all the words
         const words = JSON.parse(await fs.readFile(
             `generate/out/${seed}/${seed}.json`, "utf8"
         ));
@@ -201,7 +212,7 @@ async function main() {
         convIDs = [];
         convPromises = [];
 
-        // 5: Recombine distance lists
+        // 6: Recombine distance lists
         for (let cc = "a".charCodeAt(0); cc <= "z".charCodeAt(0); cc++) {
             const c = String.fromCharCode(cc);
             const distance = Object.create(null);
@@ -228,7 +239,7 @@ async function main() {
                 await fs.unlink(`game/assets/${seed}/w${wi}-${c}.json`);
         }
 
-        // 6: Write out the wordlist
+        // 7: Write out the wordlist
         if (valid)
             await run(["cp", `generate/out/${seed}/${seed}.json`, outWords]);
         else {
@@ -237,7 +248,7 @@ async function main() {
             console.error(`Seed ${seed} invalid!`);
         }
 
-        /* 7: Add it to the dailies list. The dailies list is a directory so
+        /* 8: Add it to the dailies list. The dailies list is a directory so
          * that the conversion can run on one system while the daily selection
          * runs on a different system, and they can synchronize in a
          * straightforward way, never conflicting on a file. */
