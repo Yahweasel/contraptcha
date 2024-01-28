@@ -64,7 +64,7 @@ installed with `pip -r requirements.txt`.
 The NSFW detector is called automatically by `generate.js`. You should not need
 to run it explicitly.
 
-The basica approach to NSFW detection and removal is this:
+The basic approach to NSFW detection and removal is this:
 
  * First, the image is generated with its normal prompt.
  * Then, it is run through `nsfw-detect.py`, which just determines the Bayesian
