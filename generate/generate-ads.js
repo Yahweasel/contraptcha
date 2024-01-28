@@ -55,6 +55,7 @@ async function main(args) {
     for (let wi = 0; wi < words.length; wi++) {
         const word = words[wi][0];
         const adStyle = words[wi][1];
+        const id = `${word}_${adStyle}`;
         try {
             await fs.access("STOP", fs.constants.F_OK);
             break;
@@ -65,7 +66,7 @@ async function main(args) {
             await Promise.race(promises);
 
         // And add this to the queue
-        ids.push(word);
+        ids.push(id);
         promises.push((async () => {
             const oname = `out/ads/${word}_${adStyle[0]}ad`;
             await new Promise(res => setTimeout(res, 0));
@@ -93,7 +94,7 @@ async function main(args) {
                 );
 
             } finally {
-                const idx = ids.indexOf(word);
+                const idx = ids.indexOf(id);
                 ids.splice(idx, 1);
                 promises.splice(idx, 1);
             }
