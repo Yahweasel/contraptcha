@@ -237,7 +237,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=1f");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=1k");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -765,8 +765,10 @@ declare let textMetrics: any;
         if (state.retries)
             stats += `Retried ${state.retries} times\n`;
 
-        if (state.gaveUpGuessed)
-            stats += `Gave up with ${state.gaveUpGuessed.filter(x => !x).length} words left\n`;
+        if (state.gaveUpGuessed) {
+            const left = state.gaveUpGuessed.filter(x => !x).length;
+            stats += `Gave up with ${left} word${(left === 1) ? "" : "s"} left\n`;
+        }
 
         // Copy it via a textarea
         const statsTE: HTMLTextAreaElement = dce("textarea");
