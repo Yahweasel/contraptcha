@@ -101,7 +101,7 @@ async function main(args) {
                 await new Promise(res => setTimeout(res, 0));
 
                 try {
-                    console.log(oname);
+                    console.log(`Generating ${oname}`);
 
                     // Make the prompt
                     const parts = [];
