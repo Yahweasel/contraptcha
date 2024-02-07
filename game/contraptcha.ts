@@ -316,18 +316,32 @@ declare let textMetrics: any;
             img.ctPromise = Promise.all([]);
 
         img.ctPromise = img.ctPromise.then(async () => {
-            // Set it to the loading spinner
-            img.src = "assets/img/loading-spinner-opaque.webp";
-            img.style.objectFit = "none";
-
             // Load the image
             const loadImg = new Image();
-            const loadPromise = Promise.race([
-                new Promise(res => loadImg.onload = res),
-                new Promise(res => setTimeout(res, 2000))
-            ]);
+            let loaded = false;
+            const loadPromise = new Promise<void>(res => {
+                loadImg.onload = () => {
+                    loaded = true;
+                    res();
+                };
+            });
             loadImg.src = url;
-            await loadPromise;
+
+            // Don't show the spinner if it loads quickly
+            await Promise.race([
+                loadPromise,
+                new Promise(res => setTimeout(res, 500))
+            ]);
+
+            if (!loaded) {
+                // OK, show the spinner
+                img.src = "assets/img/loading-spinner-opaque.webp";
+                img.style.objectFit = "none";
+                await Promise.race([
+                    loadPromise,
+                    new Promise(res => setTimeout(res, 2000))
+                ]);
+            }
 
             // Then load the real image
             img.src = url;
