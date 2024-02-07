@@ -237,7 +237,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=1k");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=1s");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -305,6 +305,37 @@ declare let textMetrics: any;
     }
 
     /**
+     * Load this image.
+     * @param img  Image element to load into
+     * @param url  URL to load
+     */
+    function loadImage(
+        img: HTMLImageElement & {ctPromise?: Promise<unknown>}, url: string
+    ) {
+        if (!img.ctPromise)
+            img.ctPromise = Promise.all([]);
+
+        img.ctPromise = img.ctPromise.then(async () => {
+            // Set it to the loading spinner
+            img.src = "assets/img/loading-spinner-opaque.webp";
+            img.style.objectFit = "none";
+
+            // Load the image
+            const loadImg = new Image();
+            const loadPromise = Promise.race([
+                new Promise(res => loadImg.onload = res),
+                new Promise(res => setTimeout(res, 2000))
+            ]);
+            loadImg.src = url;
+            await loadPromise;
+
+            // Then load the real image
+            img.src = url;
+            img.style.objectFit = "";
+        }).catch(console.error);
+    }
+
+    /**
      * Draw the images described by the current state.
      */
     function drawImages() {
@@ -321,7 +352,7 @@ declare let textMetrics: any;
             gs = `0${gs}`;
         for (let i = 0; i < 4; i++) {
             const src = `assets/${seed}/${i}_${gs}.webp`;
-            imgs[i].src = src;
+            loadImage(imgs[i], src);
             imgs[i].onclick = () => {
                 imgPanelImg.src = src;
                 panelGuard.style.display = "";
