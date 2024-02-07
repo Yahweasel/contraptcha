@@ -9,7 +9,7 @@ for file in sys.argv[1:]:
     outfile = "%s.ocr.json" % (file)
     if os.path.exists(outfile):
         continue
-    print(file)
+    print("OCRing %s" % (file))
     if reader is None:
         reader = easyocr.Reader(["en"])
     result = reader.readtext(file)

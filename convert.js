@@ -96,7 +96,7 @@ async function main() {
                     await Promise.race(convPromises);
 
                 // Convert the file
-                console.log(outFile);
+                console.log(`Converting ${outFile}`);
                 convIDs.push(outFile);
                 convPromises.push((async () => {
                     await run([
@@ -126,7 +126,7 @@ async function main() {
         ]);
 
         // 4: Provide the prompt metadata
-        console.log("prompt.json.xz");
+        console.log("Creating prompt.json.xz");
         await run([
             "/bin/sh", "-c",
             `exiftool -Prompt -json ` +
@@ -141,7 +141,7 @@ async function main() {
         ));
         for (let wi = 0; wi < words.length; wi++) {
             const word = words[wi];
-            console.log(`Word ${seed}/${wi+1}`);
+            console.log(`Processing word ${seed}/${wi+1}`);
 
             while (convIDs.length >= 2)
                 await Promise.race(convPromises);
