@@ -26,7 +26,8 @@ const fs = require("fs/promises");
 const genImg = require("./generate-img.js");
 
 const backends = [
-    "http://127.0.0.1:7821"
+    "http://127.0.0.1:7821",
+    "http://127.0.0.1:7822"
 ];
 
 const models = [
