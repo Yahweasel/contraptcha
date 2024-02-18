@@ -147,7 +147,6 @@ blood
 bloom
 board
 boat
-body
 bolt
 bomb
 bone
@@ -556,7 +555,6 @@ flag
 flame
 flash
 fleece
-flesh
 flight
 flood
 floor
