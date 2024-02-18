@@ -237,7 +237,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=1s");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=21");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
