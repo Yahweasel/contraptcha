@@ -87,10 +87,10 @@ async function main(args) {
                 prompt[10].inputs.noise_seed =
                     Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
                 prompt[102].inputs.text = `${adStyle} advertisement for ${word}`;
-                prompt[103].inputs.text = "text, panel, nsfw, penis, vagina, breasts";
+                prompt[103].inputs.text = "text, panel, nsfw, penis, vagina, breasts, nude, nudity";
 
                 await genImg.generateImg(
-                    oname, backends[wi%backends.length], prompt, 102
+                    oname, backends[wi%backends.length], prompt, 10
                 );
 
             } finally {

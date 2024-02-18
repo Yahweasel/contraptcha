@@ -65,9 +65,9 @@ function run(cmd) {
  * @param oname  Output name prefix.
  * @param backend  Backend to send the prompt to.
  * @param prompt  Prompt to use.
- * @param positive  Index in the prompt of the positive text prompt.
+ * @param seed  Index to the prompt part with `noise_seed`.
  */
-async function generateImg(oname, backend, prompt, positive) {
+async function generateImg(oname, backend, prompt, seed) {
     // Check if it's already been made
     let exists = false;
     try {
@@ -89,29 +89,35 @@ async function generateImg(oname, backend, prompt, positive) {
     ]);
     if (!nsfw1) return;
 
+    await fs.rename(`${oname}_00001_.png`, `${oname}_nsfw_0.png`);
+
     //console.log(`${oname} nsfw, regenerating...`);
 
-    // OK, add "sfw" to the prompt then...
-    await fs.rename(`${oname}_00001_.png`, `${oname}_nsfw.png`);
-    prompt[positive].inputs.text += ", sfw";
-    await sendPrompt(backend, prompt);
-    await waitForFile(`${oname}_00001_.png`);
+    // OK, try more seeds
+    const seedBase = prompt[seed].inputs.noise_seed;
+    for (let seedAdd = 1000000000; seedAdd < 16000000000; seedAdd += 1000000000) {
+        prompt[seed].inputs.noise_seed = seedBase + seedAdd;
+        await sendPrompt(backend, prompt);
+        await waitForFile(`${oname}_00001_.png`);
 
-    // Still NSFW?
-    const nsfw2 = await run([
-        "../nsfw/venv/bin/python3", "../nsfw/nsfw-detect.py",
-        `${oname}_00001_.png`
-    ]);
-    if (!nsfw2) return;
+        // Still NSFW?
+        const nsfw2 = await run([
+            "../nsfw/venv/bin/python3", "../nsfw/nsfw-detect.py",
+            `${oname}_00001_.png`
+        ]);
+        if (!nsfw2) return;
+
+        // Move away this one
+        await fs.rename(`${oname}_00001_.png`, `${oname}_nsfw_${seedAdd}.png`);
+    }
 
     //console.log(`${oname} still nsfw, censoring...`);
 
     // OK, give up, just censor-bar it
-    await fs.rename(`${oname}_00001_.png`, `${oname}_uncensored.png`);
     await run([
         "../nsfw/venv/bin/python3",
         "../nsfw/nsfw-censor.py",
-        `${oname}_uncensored.png`, `${oname}_00001_.png`
+        `${oname}_nsfw_0.png`, `${oname}_00001_.png`
     ]);
 }
 

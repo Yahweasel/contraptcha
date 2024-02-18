@@ -86,9 +86,9 @@ async function main(args) {
     const promptText = await fs.readFile("workflow_api.json", "utf8");
 
     // Make all the images
-    const ids = [];
-    const promises = [];
     for (let si = 0; si < models.length; si++) {
+        const ids = [];
+        const promises = [];
         for (let chidx = 1; chidx < (1<<numWords); chidx++) {
             // Wait for the queue to flush
             while (promises.length >= backends.length * 2)
@@ -115,12 +115,12 @@ async function main(args) {
                     prompt[9].inputs.filename_prefix = oname;
                     prompt[10].inputs.noise_seed = seed + si;
                     prompt[101].inputs.text = parts.join(", ");
-                    prompt[102].inputs.text = "text, watermark, nsfw, penis, vagina, breasts";
+                    prompt[102].inputs.text = "text, watermark, nsfw, penis, vagina, breasts, nude, nudity";
 
                     await genImg.generateImg(
                         oname,
                         backends[chidx % backends.length],
-                        prompt, 101
+                        prompt, 10
                     );
 
                 } finally {
@@ -130,8 +130,8 @@ async function main(args) {
                 }
             })());
         }
-    }
 
-    await Promise.all(promises);
+        await Promise.all(promises);
+    }
 }
 main(process.argv.slice(2));
