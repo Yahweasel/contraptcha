@@ -89,14 +89,26 @@ async function main(args) {
     for (let si = 0; si < models.length; si++) {
         const ids = [];
         const promises = [];
+        const queues = Array(backends.length).fill(0);
         for (let chidx = 1; chidx < (1<<numWords); chidx++) {
             // Wait for the queue to flush
             while (promises.length >= backends.length * 2)
                 await Promise.race(promises);
 
+            // Choose a queue
+            let queue = 0;
+            let queueLen = queues[queue];
+            for (let qi = 1; qi < queues.length; qi++) {
+                if (queues[qi] < queueLen) {
+                    queue = qi;
+                    queueLen = queues[qi];
+                }
+            }
+
             // And add this to the queue
             const id = `${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
             ids.push(id);
+            queues[queue]++;
             promises.push((async () => {
                 const oname = `out/${seed}/${id}`;
                 await new Promise(res => setTimeout(res, 0));
@@ -118,14 +130,13 @@ async function main(args) {
                     prompt[102].inputs.text = "text, watermark, nsfw, penis, vagina, breasts, nude, nudity";
 
                     await genImg.generateImg(
-                        oname,
-                        backends[chidx % backends.length],
-                        prompt, 10
+                        oname, backends[queue], prompt, 10
                     );
 
                 } finally {
                     const idx = ids.indexOf(id);
                     ids.splice(idx, 1);
+                    queues[queue]--;
                     promises.splice(idx, 1);
                 }
             })());
