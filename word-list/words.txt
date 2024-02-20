@@ -455,7 +455,6 @@ dollar
 dome
 donation
 door
-dose
 dot
 downtown
 draft
@@ -1111,7 +1110,6 @@ ride
 ridge
 rim
 ring
-rip
 river
 road
 robin
