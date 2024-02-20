@@ -39,6 +39,8 @@ async function main() {
     let convIDs = [];
     let convPromises = [];
 
+    await run(["mkdir", "-p", "cache"]);
+
     // Convert all the seeds
     const validSeeds = [];
     for (const file of await fs.readdir("generate/out")) {
@@ -150,23 +152,51 @@ async function main() {
             convPromises.push((async () => {
                 // Full dictionary
                 const dj = `game/assets/${seed}/w${wi}`;
-                const h = await fs.open(`${dj}.json`, "w");
-                const hw = h.createWriteStream();
-                const p = await cproc.spawn(
-                    "semantic-distance/distance", [
-                        "semantic-distance/GoogleNews-vectors-negative300.bin",
-                        word
-                    ], {
-                        stdio: ["ignore", "pipe", "inherit"]
-                    }
-                );
-                await new Promise(res => {
-                    p.stdout.on("data", x => hw.write(x));
-                    p.stdout.on("end", x => {
-                        hw.end(x);
-                        res();
+                const cacheD = `cache/${word}.json`;
+                let cacheExists = false;
+                try {
+                    await fs.access(`${cacheD}.xz`, fs.constants.R_OK);
+                    cacheExists = true;
+                } catch (ex) {}
+
+                if (!cacheExists) {
+                    // Process this word into the cache
+                    const h = await fs.open(cacheD, "w");
+                    const hw = h.createWriteStream();
+                    const p = await cproc.spawn(
+                        "semantic-distance/distance", [
+                            "semantic-distance/GoogleNews-vectors-negative300.bin",
+                            word
+                        ], {
+                            stdio: ["ignore", "pipe", "inherit"]
+                        }
+                    );
+                    await new Promise(res => {
+                        p.stdout.on("data", x => hw.write(x));
+                        p.stdout.on("end", () => {
+                            hw.end();
+                            res();
+                        });
                     });
-                });
+
+                    await run(["xz", cacheD]);
+                }
+
+                // Get it out of the cache
+                {
+                    const h = await fs.open(`${dj}.json`, "w");
+                    const hw = h.createWriteStream();
+                    const p = await cproc.spawn("unxz", ["-c", `${cacheD}.xz`], {
+                        stdio: ["ignore", "pipe", "inherit"]
+                    });
+                    await new Promise(res => {
+                        p.stdout.on("data", x => hw.write(x));
+                        p.stdout.on("end", () => {
+                            hw.end();
+                            res();
+                        });
+                    });
+                }
 
                 // Split dictionary
                 await run(["semantic-distance/split.js", dj]);
