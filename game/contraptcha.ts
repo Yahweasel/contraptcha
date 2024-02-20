@@ -237,7 +237,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=21");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=24");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -258,7 +258,7 @@ declare let textMetrics: any;
             window.history.pushState({}, `??? — ${seed}`, url.toString());
         }
 
-        words = await loadJSON(`assets/${seed}/w.json`);
+        words = await loadJSON(`assets/${seed}/w.json?v=1`);
         similarity = Object.create(null);
         hintFiles = {};
     }
@@ -557,7 +557,7 @@ declare let textMetrics: any;
         // Make sure we have this similarity file
         if (!similarity[first]) {
             similarity[first] =
-                await loadJSON(`assets/${seed}/w-${first}.json`);
+                await loadJSON(`assets/${seed}/w-${first}.json?v=1`);
         }
 
         // Check which is most similar
@@ -626,7 +626,7 @@ declare let textMetrics: any;
 
         // Get the hint file
         if (!hintFiles[wi])
-            hintFiles[wi] = await loadJSON(`assets/${seed}/w${wi}-top.json`);
+            hintFiles[wi] = await loadJSON(`assets/${seed}/w${wi}-top.json?v=1`);
 
         // Choose a random word to use as hint
         let hintWords = Object.keys(hintFiles[wi]);
