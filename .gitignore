@@ -11,3 +11,4 @@ semantic-distance/distance
 word-list/COMMON.TXT
 word-list/google-10000-english-no-swears.txt
 word-list/nounlist.csv
+cache/
