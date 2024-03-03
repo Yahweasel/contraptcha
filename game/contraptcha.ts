@@ -237,7 +237,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=24");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2h");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -255,7 +255,7 @@ declare let textMetrics: any;
         if (url.hash || url.search !== `?s=${seed}`) {
             url.hash = "";
             url.search = `?s=${seed}`;
-            window.history.pushState({}, `??? — ${seed}`, url.toString());
+            window.history.pushState({}, `Contraptcha — ${seed}`, url.toString());
         }
 
         words = await loadJSON(`assets/${seed}/w.json?v=1`);
@@ -292,6 +292,12 @@ declare let textMetrics: any;
             imgPanel.style.display = "none";
             setTimeout(() => winp.focus(), 0);
             modalPanel = false;
+
+            // Make sure the URL is correct
+            const url = new URL(document.location.href);
+            url.hash = "";
+            url.search = `?s=${seed}`;
+            window.history.replaceState({}, `Contraptcha — ${seed}`, url.toString());
         }
     }
 
@@ -374,6 +380,11 @@ declare let textMetrics: any;
                 imgPanel.onclick = imgPanelImg.onclick = () => {
                     panel(null);
                 };
+
+                const url = new URL(document.location.href);
+                url.hash = "";
+                url.search = `?s=${seed}&i=${i}_${gs}`;
+                window.history.replaceState({}, `Contraptcha — ${seed}`, url.toString());
             };
         }
     }
