@@ -19,7 +19,7 @@
         <meta charset="utf8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Contraptcha</title>
-        <link rel="stylesheet" href="contraptcha.css?v=r" />
+        <link rel="stylesheet" href="contraptcha.css?v=s" />
 
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
@@ -98,6 +98,18 @@
         </div>
 
         <div style="display: none;">
+            <div id="intropanel" class="panel">
+                <button class="close">x</button>
+
+                <p>Welcome to Contraptcha, the word and AI art game! WARNING: AI-generated images may be explicit or sensitive.</p>
+
+                <p>Images are generated from six nouns. Identify a word to remove it from the generated images. AI is stupid and bad at everything, so think creatively!</p>
+
+                <p>If you guess a wrong word you'll see how close it is. Click a word to “peek” and remove it from the images. Click “hint” to get a related word, but it'll cost you points.</p>
+
+                <p>There's a new puzzle every day, and lots of other puzzles too.</p>
+            </div>
+
             <div id="helppanel" class="panel">
                 <button class="close">x</button>
 
@@ -192,6 +204,7 @@
                 <button id="statsbtn" class="mainbtn menubtn">All puzzles</button>
                 <button id="copystatsbtn" class="mainbtn menubtn">Copy stats</button>
                 <button id="giveupbtn" class="mainbtn menubtn">Give up</button>
+                <button id="introbtn" class="mainbtn menubtn">Introduction</button>
             </div>
 
             <div id="messagepanel" class="panel">
@@ -211,6 +224,6 @@
 
         <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/text-metrics@4.0.1/dist/text-metrics.js"></script>
-        <script type="text/javascript" src="contraptcha.js?v=2h"></script>
+        <script type="text/javascript" src="contraptcha.js?v=2l"></script>
     </body>
 </html>

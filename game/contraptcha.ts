@@ -42,6 +42,7 @@ declare let textMetrics: any;
     const scoreDisp = gebi("scoredisplay");
 
     const loadingPanel = gebi("loadingpanel");
+    const introPanel = gebi("intropanel");
     const helpPanel = gebi("helppanel");
     const creditsPanel = gebi("creditspanel");
     const menuPanel = gebi("menupanel");
@@ -237,7 +238,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2h");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2k");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -912,9 +913,9 @@ declare let textMetrics: any;
     });
 
     // Special circumstances
-    if (!(await lf.getItem("seen-help"))) {
-        panel(helpPanel);
-        await lf.setItem("seen-help", true);
+    if (!(await lf.getItem("seen-intro"))) {
+        panel(introPanel);
+        await lf.setItem("seen-intro", true);
     } else {
         panel(null);
     }
@@ -922,6 +923,7 @@ declare let textMetrics: any;
     // Set up the buttons
     gebi("menubtn").onclick = () => panel(menuPanel);
     gebi("hintbtn").onclick = hint;
+    gebi("introbtn").onclick = () => panel(introPanel);
     gebi("helpbtn").onclick = () => panel(helpPanel);
     gebi("creditsbtn").onclick = () => panel(creditsPanel);
     gebi("restartbtn").onclick = restart;
@@ -981,6 +983,8 @@ declare let textMetrics: any;
                     return giveUp();
                 else if (cmd === "hint")
                     return hint();
+                else if (cmd === "intro")
+                    panel(introPanel);
                 else if (cmd === "help")
                     panel(helpPanel);
                 else if (cmd === "credits")
