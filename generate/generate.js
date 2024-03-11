@@ -52,6 +52,8 @@ async function main(args) {
                 meta = JSON.parse(mstr);
         } else if (arg === "-s") {
             seed = +args[++ai];
+        } else if (arg === "--json") {
+            words = JSON.parse(await fs.readFile(args[++ai], "utf8"));
         } else if (arg[0] === "-") {
             process.exit(1);
         } else {

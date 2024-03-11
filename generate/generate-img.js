@@ -74,13 +74,13 @@ async function generateImg(oname, backend, prompt, seed) {
         await fs.access(`${oname}_00001_.png`, fs.constants.F_OK);
         exists = true;
     } catch (ex) {}
-    if (exists)
-        return;
 
-    await sendPrompt(backend, prompt);
+    if (!exists) {
+        await sendPrompt(backend, prompt);
 
-    // Wait for it to exist
-    await waitForFile(`${oname}_00001_.png`);
+        // Wait for it to exist
+        await waitForFile(`${oname}_00001_.png`);
+    }
 
     // Check if it's NSFW
     const nsfw1 = await run([
