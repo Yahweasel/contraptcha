@@ -96,7 +96,6 @@ ballot
 banana
 band
 bank
-banner
 bar
 barn
 barrel
@@ -1289,7 +1288,6 @@ tag
 tail
 talent
 talk
-tan
 tank
 tape
 target
