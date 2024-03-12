@@ -16,6 +16,7 @@
 
 declare let localforage: any;
 declare let textMetrics: any;
+declare let YALAP: any;
 
 (async function() {
     const gebi = document.getElementById.bind(document);
@@ -111,7 +112,9 @@ declare let textMetrics: any;
     /**
      * Load this file as JSON, showing a loading screen if needed.
      */
-    async function loadJSON(url: string) {
+    async function loadJSON(url: string, opts: {
+        xz?: boolean
+    } = {}) {
         let endPromise: Promise<unknown> | null = null;
         let timeout: number | null = setTimeout(() => {
             timeout = null;
@@ -124,7 +127,29 @@ declare let textMetrics: any;
 
         try {
             const f = await fetch(url);
-            const ret = await f.json();
+            let ret: any;
+            if (opts.xz) {
+                // unxz it then parse
+                const y = await YALAP.YALAPR(f.body, {formats: ["raw"]});
+                const xz = await y.nextFile();
+                const rdr = xz.stream.getReader();
+                const parts: Uint8Array[] = [];
+                while (true) {
+                    const part = await rdr.read();
+                    if (part.done)
+                        break;
+                    parts.push(part.value);
+                }
+                await y.free();
+                const blob = new Blob(parts);
+                const txt = (new TextDecoder()).decode(await blob.arrayBuffer());
+                ret = JSON.parse(txt);
+
+            } else {
+                ret = await f.json();
+
+            }
+
             return ret;
         } finally {
             if (timeout) {
@@ -238,7 +263,7 @@ declare let textMetrics: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2p");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2q");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -569,7 +594,7 @@ declare let textMetrics: any;
         // Make sure we have this similarity file
         if (!similarity[first]) {
             similarity[first] =
-                await loadJSON(`assets/${seed}/w-${first}.json?v=1`);
+                await loadJSON(`assets/${seed}/w-${first}.json.xz`, {xz: true});
         }
 
         // Check which is most similar
@@ -638,7 +663,7 @@ declare let textMetrics: any;
 
         // Get the hint file
         if (!hintFiles[wi])
-            hintFiles[wi] = await loadJSON(`assets/${seed}/w${wi}-top.json?v=1`);
+            hintFiles[wi] = await loadJSON(`assets/${seed}/w${wi}-top.json.xz`, {xz: true});
 
         // Choose a random word to use as hint
         let hintWords = Object.keys(hintFiles[wi]);
