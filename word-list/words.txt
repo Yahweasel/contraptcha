@@ -371,7 +371,6 @@ cube
 cuisine
 culture
 cup
-cure
 currency
 cursor
 curve
@@ -456,7 +455,6 @@ donation
 door
 dot
 downtown
-draft
 dragon
 drain
 drama
@@ -958,7 +956,6 @@ party
 passenger
 passport
 password
-past
 pasta
 paste
 pastor
@@ -1413,7 +1410,6 @@ wall
 wallet
 walnut
 war
-warren
 warrior
 washer
 watch

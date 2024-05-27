@@ -226,6 +226,7 @@ async function main() {
                             top[wp[0]] = wp[1];
                     }
                     await fs.writeFile(`${dj}-top.json`, JSON.stringify(top));
+                    await run(["xz", `${dj}-top.json`]);
                 } catch (ex) {
                     valid = false;
                 }
@@ -264,6 +265,7 @@ async function main() {
                 `game/assets/${seed}/w-${c}.json`,
                 JSON.stringify(distance)
             );
+            await run(["xz", `game/assets/${seed}/w-${c}.json`]);
 
             // We now don't need the split dictionary
             for (let wi = 0; wi < words.length; wi++)

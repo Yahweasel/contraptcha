@@ -41,6 +41,7 @@ const numWords = 6;
 async function main(args) {
     // Handle arguments
     let meta = null;
+    let outFile = null;
     let words = [];
     let seed = -1;
 
@@ -54,6 +55,8 @@ async function main(args) {
             seed = +args[++ai];
         } else if (arg === "--json") {
             words = JSON.parse(await fs.readFile(args[++ai], "utf8"));
+        } else if (arg === "-o") {
+            outFile = args[++ai];
         } else if (arg[0] === "-") {
             process.exit(1);
         } else {
@@ -83,8 +86,10 @@ async function main(args) {
     } catch (ex) {}
     await fs.writeFile(`out/${seed}/${seed}.json`, JSON.stringify(words));
     if (meta)
-        fs.writeFile(`out/${seed}/meta.json`, JSON.stringify(meta));
+        await fs.writeFile(`out/${seed}/meta.json`, JSON.stringify(meta));
 
+    if (outFile)
+        await fs.writeFile(outFile, JSON.stringify(seed));
     const promptText = await fs.readFile("workflow_api.json", "utf8");
 
     // Make all the images
@@ -116,7 +121,7 @@ async function main(args) {
                 await new Promise(res => setTimeout(res, 0));
 
                 try {
-                    console.log(`Generating ${oname}`);
+                    console.log(`Generating ${oname} (${queue})`);
 
                     // Make the prompt
                     const parts = [];
