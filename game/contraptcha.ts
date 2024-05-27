@@ -97,6 +97,9 @@ declare let YALAP: any;
     const hidden: boolean[] = [];
     while (hidden.length < wordCt)
         hidden.push(false);
+    const forceShow: boolean[] = [];
+    while (forceShow.length < wordCt)
+        forceShow.push(false);
 
     let lastGuess: [number, [string, number]] | null = null;
 
@@ -263,7 +266,7 @@ declare let YALAP: any;
             } catch (ex) {
                 dailySeeds = [];
             }
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2q");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2u");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -388,7 +391,7 @@ declare let YALAP: any;
         const won = state.guessed.indexOf(false) < 0;
         let gidx = 0;
         for (let i = 0; i < wordCt; i++) {
-            if ((won || !state.guessed[i]) && !hidden[i])
+            if ((won || !state.guessed[i] || forceShow[i]) && !hidden[i])
                 gidx |= 1 << i;
         }
         if (gidx === 0)
@@ -468,7 +471,9 @@ declare let YALAP: any;
             if (state.guessed[wi]) {
                 drawWordGuess(
                     wgCol[0], words[wi].toUpperCase(),
-                    (won && hidden[wi]) ? "#333" : "#050"
+                    forceShow[wi]
+                        ? "#350"
+                        : ((won && hidden[wi]) ? "#333" : "#050")
                 );
             } else {
                 drawWordGuess(
@@ -550,6 +555,18 @@ declare let YALAP: any;
             /* When you've beaten the game, you can hide anything (see all
              * images) */
             hidden[toHide] = !hidden[toHide];
+
+        } else if (state.guessed.filter(x => !x).length === 1) {
+            /* When you have only one word left, you can forcibly show any *one*
+             * other word. */
+            if (forceShow[toHide]) {
+                forceShow[toHide] = false;
+            } else {
+                forceShow.fill(false);
+                if (state.guessed[toHide])
+                    forceShow[toHide] = true;
+            }
+
         } else {
             if (state.guessed[toHide])
                 return;
@@ -578,6 +595,7 @@ declare let YALAP: any;
             state.guessesPerWord[gotIt]++;
             lastGuess = null;
             hidden.fill(false);
+            forceShow.fill(false);
             drawImages();
             drawWordGuesses();
             await saveState();
@@ -699,6 +717,7 @@ declare let YALAP: any;
     async function restart() {
         state.guessed.fill(false);
         hidden.fill(false);
+        forceShow.fill(false);
         for (let wi = 0; wi < wordCt; wi++) {
             state.guessVals[wi] = [];
             state.guessWords[wi] = Object.create(null);
@@ -718,6 +737,7 @@ declare let YALAP: any;
      */
     async function newGame(opts: ChooseSeedOpts = {}) {
         hidden.fill(false);
+        forceShow.fill(false);
         lastGuess = null;
         await chooseSeed(opts);
         await drawImages();
