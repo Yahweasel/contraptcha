@@ -561,10 +561,15 @@ declare let YALAP: any;
              * other word. */
             if (forceShow[toHide]) {
                 forceShow[toHide] = false;
+            } else if (hidden[toHide]) {
+                hidden[toHide] = false;
             } else {
                 forceShow.fill(false);
+                hidden.fill(false);
                 if (state.guessed[toHide])
                     forceShow[toHide] = true;
+                else
+                    hidden[toHide] = true;
             }
 
         } else {
