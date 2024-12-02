@@ -17,7 +17,6 @@ adobe
 adult
 advertisement
 advice
-advocacy
 affair
 agency
 agent
@@ -35,7 +34,6 @@ algebra
 algorithm
 alien
 alliance
-allowance
 aluminum
 ambassador
 amber
@@ -67,7 +65,6 @@ article
 artist
 ash
 assault
-assistance
 assistant
 astrology
 astronomy
@@ -212,7 +209,6 @@ calendar
 camel
 camera
 camp
-campaign
 campus
 can
 canal
@@ -312,7 +308,6 @@ company
 competition
 complaint
 composer
-composition
 computer
 concert
 concrete
@@ -422,7 +417,6 @@ dictionary
 diesel
 diet
 dig
-digit
 dinner
 dip
 diploma
@@ -588,7 +582,6 @@ fur
 furniture
 future
 gallery
-game
 gang
 gap
 garage
@@ -695,7 +688,6 @@ husband
 ice
 icon
 illness
-illustration
 index
 industry
 infant
@@ -749,7 +741,6 @@ knee
 knife
 knight
 knitting
-knock
 lab
 label
 laboratory
@@ -898,7 +889,6 @@ nerve
 nest
 net
 network
-news
 newsletter
 newspaper
 nickel
@@ -906,7 +896,6 @@ night
 nose
 note
 notebook
-nothing
 novel
 nuke
 number
