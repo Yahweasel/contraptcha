@@ -46,6 +46,7 @@ declare let YALAP: any;
     const introPanel = gebi("intropanel");
     const helpPanel = gebi("helppanel");
     const creditsPanel = gebi("creditspanel");
+    const creditsMsg = gebi("creditsbox");
     const menuPanel = gebi("menupanel");
     const msgPanel = gebi("messagepanel");
     const msgPanelMsg = gebi("messagepanelmessage");
@@ -108,6 +109,7 @@ declare let YALAP: any;
     let similarity: Record<string, Record<string, number[]>> =
         Object.create(null);
     let hintFiles: Record<number, [string, number]> = {};
+    let credits: any = null;
     let beatEveryPuzzle = false;
 
     let modalPanel = false;
@@ -289,6 +291,7 @@ declare let YALAP: any;
 
         words = await loadJSON(`assets/${seed}/w.json?v=1`);
         similarity = Object.create(null);
+        credits = null;
         hintFiles = {};
     }
 
@@ -920,6 +923,43 @@ declare let YALAP: any;
         }
     }
 
+    /**
+     * Show the credits panel, complete with credits.
+     */
+    async function showCredits() {
+        if (!credits) {
+            credits = await loadJSON(`assets/${seed}/cr.json`);
+
+            // Turn it into links
+            let html = "";
+            for (let i = 0; i < credits.length; i++) {
+                const cr = credits[i];
+                if (i !== 0)
+                    html += ", ";
+                if (i === credits.length - 1)
+                    html += "and ";
+                switch (cr) {
+                    case "juggernautxl8":
+                        html += '<a href="https://civitai.com/models/133005?modelVersionId=288982">Juggernaut XL</a>';
+                        break;
+                    case "realvisxl3.0turbo":
+                        html += '<a href="https://civitai.com/models/139562?modelVersionId=272378">RealVisXL</a>';
+                        break;
+                    case "dreamshaperxlsfwturbo":
+                        html += '<a href="https://civitai.com/models/112902?modelVersionId=302806">DreamShaper XL</a>';
+                        break;
+                    case "sdxl":
+                        html += '<a href="https://stability.ai/stable-image">Stable Diffusion XL</a>';
+                        break;
+                    default:
+                        html += cr;
+                }
+            }
+            creditsMsg.innerHTML = html;
+        }
+        panel(creditsPanel);
+    }
+
     // Choose the initial seed
     await chooseSeed({daily: true});
 
@@ -975,7 +1015,7 @@ declare let YALAP: any;
     gebi("hintbtn").onclick = hint;
     gebi("introbtn").onclick = () => panel(introPanel);
     gebi("helpbtn").onclick = () => panel(helpPanel);
-    gebi("creditsbtn").onclick = () => panel(creditsPanel);
+    gebi("creditsbtn").onclick = () => showCredits();
     gebi("restartbtn").onclick = restart;
     gebi("dailybtn").onclick = () => {
         panel(null);
