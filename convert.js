@@ -273,9 +273,10 @@ async function main() {
         }
 
         // 7: Write out the wordlist
-        if (valid)
+        if (valid) {
             await run(["cp", `generate/out/${seed}/${seed}.json`, outWords]);
-        else {
+            await run(["cp", `generate/out/${seed}/cr.json`, `game/assets/${seed}/cr.json`]);
+        } else {
             if (!meta.daily)
                 validSeeds.pop();
             console.error(`Seed ${seed} invalid!`);
