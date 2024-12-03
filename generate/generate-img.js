@@ -108,7 +108,7 @@ async function generateImg(oname, backendIdx, cmd, model, prompt) {
     // Check if it's NSFW
     const nsfw1 = await run([
         "../nsfw/venv/bin/python3", "../nsfw/nsfw-detect.py",
-        `${oname}.png`
+        `${oname}_00001_.png`
     ]);
     if (!nsfw1) return;
 
