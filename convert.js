@@ -131,7 +131,7 @@ async function main() {
         console.log("Creating prompt.json.xz");
         await run([
             "/bin/sh", "-c",
-            `exiftool -Prompt -json ` +
+            `exiftool -Parameters -json ` +
             `generate/out/${seed}/*.png ` +
             `| xz > ` +
             `game/assets/${seed}/prompt.json.xz`
@@ -309,6 +309,7 @@ async function main() {
     // Write out the list of seeds
     await fs.writeFile("game/assets/seeds.json", JSON.stringify(validSeeds));
 
+    /*
     // Convert the ads
     await run(["mkdir", "-p", "game/assets/ads"]);
     for (const file of await fs.readdir("generate/out/ads")) {
@@ -344,6 +345,7 @@ async function main() {
             convPromises.splice(idx, 1);
         })());
     }
+    */
     await Promise.all(convPromises);
     convIDs = [];
     convPromises = [];

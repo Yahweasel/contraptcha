@@ -150,10 +150,13 @@ async function generateImg(oname, backendIdx, cmd, model, prompt) {
 /**
  * Flush all outstanding commands.
  */
-async function flush() {
+async function flush(clear) {
     const ps = [];
-    for (const idx in backends)
+    for (const idx in backends) {
         ps.push(backends[idx].flush());
+        if (clear)
+            delete backends[idx];
+    }
     return Promise.all(ps);
 }
 

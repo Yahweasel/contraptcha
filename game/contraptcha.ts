@@ -939,6 +939,15 @@ declare let YALAP: any;
                 if (i === credits.length - 1)
                     html += "and ";
                 switch (cr) {
+                    case "shuttle3":
+                        html += '<a href="https://civitai.com/models/943001?modelVersionId=1055701">Shuttle 3 Diffusion</a>';
+                        break;
+                    case "pixelwave3schnell":
+                        html += '<a href="https://civitai.com/models/141592?modelVersionId=1002647">PixelWave</a>';
+                        break;
+                    case "juggernautxl11":
+                        html += '<a href="https://civitai.com/models/133005?modelVersionId=782002">Juggernaut XL</a>';
+                        break;
                     case "juggernautxl8":
                         html += '<a href="https://civitai.com/models/133005?modelVersionId=288982">Juggernaut XL</a>';
                         break;
@@ -947,6 +956,9 @@ declare let YALAP: any;
                         break;
                     case "dreamshaperxlsfwturbo":
                         html += '<a href="https://civitai.com/models/112902?modelVersionId=302806">DreamShaper XL</a>';
+                        break;
+                    case "flux1schnell":
+                        html += '<a href="https://huggingface.co/black-forest-labs/FLUX.1-schnell">FLUX.1 Schnell</a>';
                         break;
                     case "sdxl":
                         html += '<a href="https://stability.ai/stable-image">Stable Diffusion XL</a>';

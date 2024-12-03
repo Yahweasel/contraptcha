@@ -31,10 +31,36 @@ const numWords = 6;
 const negative = "text, watermark, nsfw, penis, vagina, breasts, nude, nudity";
 
 const models = [
+    {
+        name: "shuttle3",
+        m: "models/shuttle/shuttle3Diffusion_bf16.q8_0.gguf",
+        "-vae": "models/flux/ae.safetensors",
+        "-clip_l": "models/flux/clip_l.safetensors",
+        "-t5xxl": "models/flux/t5xxl_fp16.safetensors",
+        "-cfg-scale": "1.0",
+        "-steps": "4"
+    },
+    {
+        name: "pixelwave3schnell",
+        m: "models/pixelwave/pixelwave_flux1Schnell03.q8_0.gguf",
+        "-diffusion-model": "models/pixelwave/pixelwave_flux1Schnell03.q8_0.gguf",
+        "-vae": "models/flux/ae.safetensors",
+        "-clip_l": "models/flux/clip_l.safetensors",
+        "-t5xxl": "models/flux/t5xxl_fp16.safetensors",
+        "-cfg-scale": "1.0",
+        "-steps": "6"
+    },
+    {
+        name: "flux1schnell",
+        m: "models/flux/flux1-schnell-q8_0.gguf",
+        "-diffusion-model": "models/flux/flux1-schnell-q8_0.gguf",
+        "-vae": "models/flux/ae.safetensors",
+        "-clip_l": "models/flux/clip_l.safetensors",
+        "-t5xxl": "models/flux/t5xxl_fp16.safetensors",
+        "-cfg-scale": "1.0",
+        "-steps": "4"
+    },
     {name: "juggernautxl11", m: "models/juggernautXL_juggXIByRundiffusion.safetensors"},
-    {name: "realvisxl5.0", m: "models/realvisxlV50_v50Bakedvae.safetensors"},
-    {name: "dreamshaperxla2", m: "models/dreamshaperXL_alpha2Xl10.safetensors"},
-    {name: "sdxl", m: "models/sd_xl_base_1.0.safetensors"}
 ];
 
 const backends = [
@@ -152,8 +178,9 @@ async function main(args) {
             ));
         }
 
-        genImg.flush();
+        await genImg.flush();
         await Promise.all(promises);
+        await genImg.flush(true);
     }
 }
 main(process.argv.slice(2));
