@@ -25,18 +25,34 @@ const fs = require("fs/promises");
 
 const genImg = require("./generate-img.js");
 
-const backends = [
-    "http://127.0.0.1:7821",
-    "http://127.0.0.1:7822"
-];
+const width = 1152;
+const height = 896;
+const numWords = 6;
+const negative = "text, watermark, nsfw, penis, vagina, breasts, nude, nudity";
 
 const models = [
-    "juggernautXL_v8Rundiffusion.safetensors",
-    "realvisxlV30Turbo_v30Bakedvae.safetensors",
-    "dreamshaperXL_sfwTurboDpmppSDE.safetensors",
-    "OfficialStableDiffusion/sd_xl_base_1.0.safetensors"
+    {name: "juggernautxl11", m: "models/juggernautXL_juggXIByRundiffusion.safetensors"},
+    {name: "realvisxl5.0", m: "models/realvisxlV50_v50Bakedvae.safetensors"},
+    {name: "dreamshaperxla2", m: "models/dreamshaperXL_alpha2Xl10.safetensors"},
+    {name: "sdxl", m: "models/sd_xl_base_1.0.safetensors"}
 ];
-const numWords = 6;
+
+const backends = [
+    [
+        "env",
+        "-C", "../../sdinter",
+        "LD_LIBRARY_PATH=/opt/rocm/llvm/lib:/opt/rocm/lib",
+        "ROCR_VISIBLE_DEVICES=0",
+        "./sdinter"
+    ],
+    [
+        "env",
+        "-C", "../../sdinter",
+        "LD_LIBRARY_PATH=/opt/rocm/llvm/lib:/opt/rocm/lib",
+        "ROCR_VISIBLE_DEVICES=1",
+        "./sdinter"
+    ]
+];
 
 async function main(args) {
     // Handle arguments
@@ -85,70 +101,58 @@ async function main(args) {
         await fs.mkdir(`out/${seed}`);
     } catch (ex) {}
     await fs.writeFile(`out/${seed}/${seed}.json`, JSON.stringify(words));
+    await fs.writeFile(`out/${seed}/cr.json`, JSON.stringify(models.map(x => x.name)));
     if (meta)
         await fs.writeFile(`out/${seed}/meta.json`, JSON.stringify(meta));
 
     if (outFile)
         await fs.writeFile(outFile, JSON.stringify(seed));
-    const promptText = await fs.readFile("workflow_api.json", "utf8");
 
     // Make all the images
-    for (let si = 0; si < models.length; si++) {
-        const ids = [];
+    // For each model...
+    for (let mi = 0; mi < models.length; mi++) {
         const promises = [];
-        const queues = Array(backends.length).fill(0);
-        for (let chidx = 1; chidx < (1<<numWords); chidx++) {
-            // Wait for the queue to flush
-            while (promises.length >= backends.length * 2)
-                await Promise.race(promises);
 
-            // Choose a queue
-            let queue = 0;
-            let queueLen = queues[queue];
-            for (let qi = 1; qi < queues.length; qi++) {
-                if (queues[qi] < queueLen) {
-                    queue = qi;
-                    queueLen = queues[qi];
-                }
-            }
-
-            // And add this to the queue
-            const id = `${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
-            ids.push(id);
-            queues[queue]++;
-            promises.push((async () => {
-                const oname = `out/${seed}/${id}`;
-                await new Promise(res => setTimeout(res, 0));
-
-                try {
-                    console.log(`Generating ${oname} (${queue})`);
-
-                    // Make the prompt
-                    const parts = [];
-                    for (let i = 0; i < numWords; i++) {
-                        if (!(chidx & (1<<i))) continue;
-                        parts.push(words[i]);
-                    }
-                    const prompt = JSON.parse(promptText);
-                    prompt[4].inputs.ckpt_name = models[si];
-                    prompt[9].inputs.filename_prefix = oname;
-                    prompt[10].inputs.noise_seed = seed + si;
-                    prompt[101].inputs.text = parts.join(", ");
-                    prompt[102].inputs.text = "text, watermark, nsfw, penis, vagina, breasts, nude, nudity";
-
-                    await genImg.generateImg(
-                        oname, backends[queue], prompt, 10
-                    );
-
-                } finally {
-                    const idx = ids.indexOf(id);
-                    ids.splice(idx, 1);
-                    queues[queue]--;
-                    promises.splice(idx, 1);
-                }
-            })());
+        const model = models[mi];
+        const modelCmd = [
+            "-W", width,
+            "-H", height,
+            "--sampling-method", "euler"
+        ];
+        for (const key in model) {
+            if (key === "name") continue;
+            modelCmd.push(`-${key}`, model[key]);
         }
 
+        // For each image...
+        for (let chidx = 1; chidx < (1<<numWords); chidx++) {
+            const backendIdx = chidx % backends.length;
+
+            // And add this to the queue
+            const id = `${seed+mi}_${chidx.toString(16).padStart(2, "0")}`;
+
+            const oname = `${process.cwd()}/out/${seed}/${id}`;
+
+            console.log(`Generating ${seed}/${id}`);
+
+            // Make the prompt
+            const parts = [];
+            for (let i = 0; i < numWords; i++) {
+                if (!(chidx & (1<<i))) continue;
+                parts.push(words[i]);
+            }
+            const prompt = {
+                seed: seed+mi,
+                prompt: parts.join(", "),
+                negative
+            };
+
+            promises.push(genImg.generateImg(
+                oname, backendIdx, backends[backendIdx], modelCmd, prompt
+            ));
+        }
+
+        genImg.flush();
         await Promise.all(promises);
     }
 }
