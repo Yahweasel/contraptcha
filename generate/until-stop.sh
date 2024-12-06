@@ -1,6 +1,6 @@
 #!/bin/sh
 rm -f STOP
-ct=0
+ct=1
 while [ ! -e STOP ]
 do
     if [ "$ct" = "0" ]
