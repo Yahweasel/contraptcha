@@ -21,6 +21,18 @@ const fs = require("fs/promises");
  * Run this command.
  */
 function run(cmd) {
+    if (cmd[0] === "ssh") {
+        // Remote command. Escape it.
+        cmd = cmd.slice(0);
+        let host = 1;
+        for (; host < cmd.length && cmd[host][0] === "-"; host++) {}
+        for (let i = host + 1; i < cmd.length; i++) {
+            cmd[i] = "'" +
+                cmd[i].toString().replace(/'/g, "'\\''") +
+                "'";
+        }
+    }
+
     return new Promise(res => {
         const p = cproc.spawn(cmd[0], cmd.slice(1), {
             stdio: ["ignore", "inherit", "inherit"]
@@ -49,7 +61,7 @@ class Backend {
     push(args) {
         this.args = this.args.concat(args);
         if (++this.imgs >= 21)
-            this.flush();
+            return this.flush();
         return this.nextPromise;
     }
 
