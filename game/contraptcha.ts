@@ -52,6 +52,7 @@ declare let YALAP: any;
     const msgPanelMsg = gebi("messagepanelmessage");
     const statsPanel = gebi("statspanel");
     const statsPanelInner = gebi("statspanelinner");
+    let imgPanelSrc = "";
     const imgPanel = gebi("imgpanel");
     const imgPanelImg = gebi("imgpanelimg");
 
@@ -112,6 +113,7 @@ declare let YALAP: any;
     let credits: any = null;
     let beatEveryPuzzle = false;
 
+    let currentPanel: HTMLElement | null = null;
     let modalPanel = false;
 
     /**
@@ -317,12 +319,14 @@ declare let YALAP: any;
                 winp.blur();
                 to.focus();
             }, 0);
+            currentPanel = to;
             modalPanel = modal;
         } else {
             panelGuard.style.display = "none";
             panelBox1.style.display = "none";
             imgPanel.style.display = "none";
             setTimeout(() => winp.focus(), 0);
+            currentPanel = null;
             modalPanel = false;
 
             // Make sure the URL is correct
@@ -388,9 +392,9 @@ declare let YALAP: any;
     }
 
     /**
-     * Draw the images described by the current state.
+     * Get the hex index of the images for our current guess state.
      */
-    function drawImages() {
+    function guessIndex() {
         const won = state.guessed.indexOf(false) < 0;
         let gidx = 0;
         for (let i = 0; i < wordCt; i++) {
@@ -402,23 +406,45 @@ declare let YALAP: any;
         let gs = gidx.toString(16);
         if (gs.length < 2)
             gs = `0${gs}`;
-        for (let i = 0; i < 4; i++) {
-            const src = `assets/${seed}/${i}_${gs}.webp`;
-            loadImage(imgs[i], src);
-            imgs[i].onclick = () => {
-                imgPanelImg.src = src;
-                panelGuard.style.display = "";
-                imgPanel.style.display = "";
-                imgPanel.onclick = imgPanelImg.onclick = () => {
-                    panel(null);
-                };
+        return gs;
+    }
 
-                const url = new URL(document.location.href);
-                url.hash = "";
-                url.search = `?s=${seed}&i=${i}_${gs}`;
-                window.history.replaceState({}, `Contraptcha — ${seed}`, url.toString());
-            };
+    /**
+     * Draw the images described by the current state.
+     */
+    function drawImages() {
+        const gidx = guessIndex();
+        for (let i = 0; i < 4; i++) {
+            const src = `assets/${seed}/${i}_${gidx}.webp`;
+            loadImage(imgs[i], src);
+            imgs[i].onclick = () => popOutImage(i);
         }
+    }
+
+    /**
+     * Pop out (highlight) a particular image.
+     */
+    function popOutImage(idx: number) {
+        const gidx = guessIndex();
+        const src = `assets/${seed}/${idx}_${gidx}.webp`;
+
+        if (imgPanelSrc === src && imgPanel.style.display === "") {
+            // Toggle it
+            panel(null);
+            return;
+        }
+
+        imgPanelImg.src = imgPanelSrc = src;
+        panelGuard.style.display = "";
+        imgPanel.style.display = "";
+        imgPanel.onclick = imgPanelImg.onclick = () => {
+            panel(null);
+        };
+
+        const url = new URL(document.location.href);
+        url.hash = "";
+        url.search = `?s=${seed}&i=${idx}_${gidx}`;
+        window.history.replaceState({}, `Contraptcha — ${seed}`, url.toString());
     }
 
     /**
@@ -1051,6 +1077,18 @@ declare let YALAP: any;
             // Change hidden state
             ev.preventDefault();
             hideWord(+ev.key - 1);
+            return;
+        }
+        if (ev.key === "!" || ev.key === "@" || ev.key === "#" || ev.key === "$") {
+            // Pop out an image
+            let idx = (<Record<string, number>> {
+                "!": 0,
+                "@": 1,
+                "#": 2,
+                "$": 3
+            })[ev.key] || 0;
+            if (!modalPanel)
+                popOutImage(idx);
             return;
         }
         if (ev.key === "Escape") {
