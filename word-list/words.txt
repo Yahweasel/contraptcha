@@ -31,7 +31,6 @@ alarm
 album
 alcohol
 algebra
-algorithm
 alien
 alliance
 aluminum
@@ -233,7 +232,6 @@ cash
 casino
 castle
 cat
-catalogue
 cathedral
 cattle
 cave
@@ -659,7 +657,6 @@ herb
 hero
 highway
 hill
-hip
 history
 hockey
 hole
