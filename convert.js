@@ -228,6 +228,7 @@ async function main() {
                     await fs.writeFile(`${dj}-top.json`, JSON.stringify(top));
                     await run(["xz", `${dj}-top.json`]);
                 } catch (ex) {
+                    console.error(ex);
                     valid = false;
                 }
 
