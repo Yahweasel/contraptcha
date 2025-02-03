@@ -1,0 +1,9 @@
+[
+    [
+        "env",
+        "-C", "../../sdinter",
+        "LD_LIBRARY_PATH=/opt/rocm-6.1.4/llvm/lib:/opt/rocm-6.1.4/lib",
+        "ROCR_VISIBLE_DEVICES=0",
+        "./sdinter"
+    ]
+]

@@ -4,6 +4,8 @@ censor/out/
 game/assets/
 game/contraptcha.js
 game/favicon*
+generate/backends.json
+generate/seed.json
 generate/out/
 node_modules/
 package-lock.json

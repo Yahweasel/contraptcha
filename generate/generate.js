@@ -63,22 +63,7 @@ const models = [
     {name: "juggernautxl11", m: "models/juggernautXL_juggXIByRundiffusion.safetensors"},
 ];
 
-const backends = [
-    [
-        "env",
-        "-C", "../../sdinter",
-        "LD_LIBRARY_PATH=/opt/rocm/llvm/lib:/opt/rocm/lib",
-        "ROCR_VISIBLE_DEVICES=0",
-        "./sdinter"
-    ],
-    [
-        "env",
-        "-C", "../../sdinter",
-        "LD_LIBRARY_PATH=/opt/rocm/llvm/lib:/opt/rocm/lib",
-        "ROCR_VISIBLE_DEVICES=1",
-        "./sdinter"
-    ]
-];
+const backends = require("./backends.json");
 
 async function main(args) {
     // Handle arguments
