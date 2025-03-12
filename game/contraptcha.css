@@ -40,7 +40,7 @@ a:hover {
     flex-direction: row;
     gap: 2px;
     margin-bottom: 2px;
-    align-items: center;
+    justify-items: center;
 }
 
 .imgbox {
