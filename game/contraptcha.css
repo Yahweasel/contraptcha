@@ -40,6 +40,7 @@ a:hover {
     flex-direction: row;
     gap: 2px;
     margin-bottom: 2px;
+    align-items: center;
 }
 
 .imgbox {
@@ -163,6 +164,10 @@ a:hover {
 
 .menubtn {
     margin-top: 0.5em;
+}
+
+.abtn {
+    font-size: 1.5em;
 }
 
 #panelguard {
