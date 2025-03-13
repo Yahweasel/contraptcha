@@ -18,21 +18,35 @@ const cproc = require("child_process");
 const fs = require("fs/promises");
 
 /**
+ * Send this prompt to the AI.
+ */
+async function sendPrompt(backend, prompt) {
+    const f = await fetch(`${backend}/prompt`, {
+        method: "POST",
+        headers: {"content-type": "application/json"},
+        body: JSON.stringify({prompt})
+    });
+    await f.text();
+}
+
+/**
+ * Wait for this file to exist.
+ */
+async function waitForFile(name) {
+    while (true) {
+        try {
+            await fs.access(name, fs.constants.F_OK);
+            break;
+        } catch (ex) {}
+        await new Promise(res => setTimeout(res, 1000));
+    }
+    await new Promise(res => setTimeout(res, 1000));
+}
+
+/**
  * Run this command.
  */
 function run(cmd) {
-    if (cmd[0] === "ssh") {
-        // Remote command. Escape it.
-        cmd = cmd.slice(0);
-        let host = 1;
-        for (; host < cmd.length && cmd[host][0] === "-"; host++) {}
-        for (let i = host + 1; i < cmd.length; i++) {
-            cmd[i] = "'" +
-                cmd[i].toString().replace(/'/g, "'\\''") +
-                "'";
-        }
-    }
-
     return new Promise(res => {
         const p = cproc.spawn(cmd[0], cmd.slice(1), {
             stdio: ["ignore", "inherit", "inherit"]
@@ -46,76 +60,27 @@ function run(cmd) {
     });
 }
 
-class Backend {
-    constructor(cmd, model) {
-        this.cmd = cmd.concat(model);
-        this.args = [];
-        this.imgs = 0;
-        this.serPromise = Promise.all([]);
-        this.nextPromise = new Promise((res, rej) => {
-            this.nextPromiseRes = res;
-            this.nextPromiseRej = rej;
-        });
-    }
-
-    push(args) {
-        this.args = this.args.concat(args);
-        if (++this.imgs >= 21)
-            return this.flush();
-        return this.nextPromise;
-    }
-
-    flush() {
-        if (!this.imgs)
-            return this.serPromise;
-
-        const args = this.args;
-        this.args = [];
-        this.imgs = 0;
-
-        const promise = this.nextPromise;
-        const res = this.nextPromiseRes;
-        const rej = this.nextPromiseRej;
-
-        this.nextPromise = new Promise((res, rej) => {
-            this.nextPromiseRes = res;
-            this.nextPromiseRej = rej;
-        });
-
-        return this.serPromise = this.serPromise.catch(console.error).then(async () => {
-            const p = run(this.cmd.concat(args));
-            p.then(res).catch(rej);
-            return p;
-        });
-    }
-}
-
-const backends = Object.create(null);
-
-/**
- * Get a given backend.
- */
-function backend(idx, cmd, model) {
-    if (!backends[idx])
-        backends[idx] = new Backend(cmd, model);
-    return backends[idx];
-}
-
 /**
  * Generate an image with this prompt.
  * @param oname  Output name prefix.
- * @param backendIdx  Backend index.
- * @param cmd  Command to run the backend.
+ * @param backend  Backend to send the prompt to.
  * @param prompt  Prompt to use.
+ * @param seed  Index to the prompt part with `noise_seed`.
  */
-async function generateImg(oname, backendIdx, cmd, model, prompt) {
-    const be = backend(backendIdx, cmd, model);
-    await be.push([
-        "-s", prompt.seed,
-        "-p", prompt.prompt,
-        "-n", prompt.negative,
-        "-o", `${oname}_00001_.png`
-    ]);
+async function generateImg(oname, backend, prompt) {
+    // Check if it's already been made
+    let exists = false;
+    try {
+        await fs.access(`${oname}_00001_.png`, fs.constants.F_OK);
+        exists = true;
+    } catch (ex) {}
+
+    if (!exists) {
+        await sendPrompt(backend, prompt.workflow);
+
+        // Wait for it to exist
+        await waitForFile(`${oname}_00001_.png`);
+    }
 
     // Check if it's NSFW
     const nsfw1 = await run([
@@ -129,14 +94,11 @@ async function generateImg(oname, backendIdx, cmd, model, prompt) {
     //console.log(`${oname} nsfw, regenerating...`);
 
     // OK, try more seeds
+    const seedBase = prompt.workflow[prompt.seed].inputs.noise_seed;
     for (let seedAdd = 1000000000; seedAdd < 16000000000; seedAdd += 1000000000) {
-        be.push([
-            "-s", prompt.seed + seedAdd,
-            "-p", prompt.prompt,
-            "-n", prompt.negative,
-            "-o", `${oname}_00001_.png`
-        ]);
-        await be.flush();
+        prompt.workflow[prompt.seed].inputs.noise_seed = seedBase + seedAdd;
+        await sendPrompt(backend, prompt.workflow);
+        await waitForFile(`${oname}_00001_.png`);
 
         // Still NSFW?
         const nsfw2 = await run([
@@ -159,17 +121,4 @@ async function generateImg(oname, backendIdx, cmd, model, prompt) {
     ]);
 }
 
-/**
- * Flush all outstanding commands.
- */
-async function flush(clear) {
-    const ps = [];
-    for (const idx in backends) {
-        ps.push(backends[idx].flush());
-        if (clear)
-            delete backends[idx];
-    }
-    return Promise.all(ps);
-}
-
-module.exports = {generateImg, flush};
+module.exports = {generateImg};

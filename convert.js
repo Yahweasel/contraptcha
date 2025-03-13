@@ -42,7 +42,8 @@ async function main() {
     await run(["mkdir", "-p", "cache"]);
 
     // Convert all the seeds
-    const validSeeds = [];
+    const normalSeeds = [];
+    const hardSeeds = [];
     for (const file of await fs.readdir("generate/out")) {
         const seed = parseInt(file);
         try {
@@ -62,8 +63,12 @@ async function main() {
         } catch (ex) {}
 
         let valid = true;
-        if (!meta.daily)
-            validSeeds.push(seed);
+        if (!meta.daily) {
+            if (meta.hard)
+                hardSeeds.push(seed);
+            else
+                normalSeeds.push(seed);
+        }
 
         const outWords = `game/assets/${seed}/w.json`;
         try {
@@ -131,7 +136,7 @@ async function main() {
         console.log("Creating prompt.json.xz");
         await run([
             "/bin/sh", "-c",
-            `exiftool -Parameters -json ` +
+            `exiftool -Prompt -json ` +
             `generate/out/${seed}/*.png ` +
             `| xz > ` +
             `game/assets/${seed}/prompt.json.xz`
@@ -278,8 +283,12 @@ async function main() {
             await run(["cp", `generate/out/${seed}/${seed}.json`, outWords]);
             await run(["cp", `generate/out/${seed}/cr.json`, `game/assets/${seed}/cr.json`]);
         } else {
-            if (!meta.daily)
-                validSeeds.pop();
+            if (!meta.daily) {
+                if (meta.hard)
+                    hardSeeds.pop();
+                else
+                    normalSeeds.pop();
+            }
             console.error(`Seed ${seed} invalid!`);
         }
 
@@ -302,14 +311,15 @@ async function main() {
             `game/assets/exclude-seeds.json`, "utf8"
         ));
         for (const seed of excludeSeeds) {
-            const idx = validSeeds.indexOf(seed);
+            const idx = normalSeeds.indexOf(seed);
             if (idx >= 0)
-                validSeeds.splice(idx, 1);
+                normalSeeds.splice(idx, 1);
         }
     } catch (ex) {}
 
     // Write out the list of seeds
-    await fs.writeFile("game/assets/seeds.json", JSON.stringify(validSeeds));
+    await fs.writeFile("game/assets/seeds.json", JSON.stringify(normalSeeds));
+    await fs.writeFile("game/assets/hard-seeds.json", JSON.stringify(hardSeeds));
 
     /*
     // Convert the ads

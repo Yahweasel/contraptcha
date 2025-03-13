@@ -30,19 +30,17 @@ The larger steps are documented here.
 ### Generating imagery
 
 The `generate.js` script in the `generate` directory generates the actual
-imagery.
+imagery. But, more precisely, it just uses the HTTP interface to
+[ComfyUI](https://github.com/comfyanonymous/ComfyUI). The author has only ever
+tested it with ComfyUI in turn installed through
+[StableSwarmUI](https://github.com/Stability-AI/StableSwarmUI). You should have
+StableSwarmUI up and running before attempting to do anything else.
 
-More precisely, it uses [sdinter](https://github.com/Yahweasel/sdinter), a
-frontend for
-[stable-diffusion.cpp](https://github.com/leejet/stable-diffusion.cpp), to
-generate the images. You must have sdinter checked out and built in a directory
-next to this one.
-
-All necessary models (see the header of `generate.js` for the list of used
-models) should be installed in sdinter's directory, and you'll likely need to
-adjust the backends parameter in `generate.js` as well. Then, just run
-`generate.js` which the list of words to generate as arguments. You can look at
-`generate.sh` to see how the wordlists are selected for the site (it's not
+In the `output` directory of ComfyUI, `out` should be symlinked to a (new)
+`generate/out` directory here. All necessary models (see the header of
+`generate-img.js` for the list of used models) should be installed. Then, just
+run `generate.js` which the list of words to generate as arguments. You can look
+at `generate.sh` to see how the wordlists are selected for the site (it's not
 complicated).
 
 Each puzzle is given a random seed, and that random seed is both used as an

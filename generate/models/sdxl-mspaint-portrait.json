@@ -1,0 +1,188 @@
+{
+    "output": "3001",
+    "seed": "10",
+    "prompt": "6",
+    "negative": "7",
+    "workflow":
+{
+  "4": {
+    "inputs": {
+      "ckpt_name": "OfficialStableDiffusion/sd_xl_base_1.0.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": 1152,
+      "height": 896,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent Image"
+    }
+  },
+  "6": {
+    "inputs": {
+      "width": 1728,
+      "height": 1344,
+      "crop_w": 0,
+      "crop_h": 0,
+      "target_width": 1152,
+      "target_height": 896,
+      "text_g": "mspaint drawing of @POSITIVE@",
+      "text_l": "mspaint drawing of @POSITIVE@",
+      "clip": [
+        "3000",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncodeSDXL",
+    "_meta": {
+      "title": "CLIPTextEncodeSDXL"
+    }
+  },
+  "7": {
+    "inputs": {
+      "width": 896,
+      "height": 704,
+      "crop_w": 0,
+      "crop_h": 0,
+      "target_width": 1152,
+      "target_height": 896,
+      "text_g": "@NEGATIVE@",
+      "text_l": "@NEGATIVE@",
+      "clip": [
+        "3000",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncodeSDXL",
+    "_meta": {
+      "title": "CLIPTextEncodeSDXL"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "10": {
+    "inputs": {
+      "noise_seed": 1,
+      "steps": 20,
+      "cfg": 7,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "start_at_step": 0,
+      "end_at_step": 10000,
+      "var_seed": 0,
+      "var_seed_strength": 0,
+      "sigma_max": -1,
+      "sigma_min": -1,
+      "rho": 7,
+      "add_noise": "enable",
+      "return_with_leftover_noise": "disable",
+      "previews": "default",
+      "tile_sample": false,
+      "tile_size": 1024,
+      "model": [
+        "101",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "SwarmKSampler",
+    "_meta": {
+      "title": "SwarmKSampler"
+    }
+  },
+  "100": {
+    "inputs": {
+      "sampling": "eps",
+      "zsnr": false,
+      "model": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingDiscrete",
+    "_meta": {
+      "title": "ModelSamplingDiscrete"
+    }
+  },
+  "101": {
+    "inputs": {
+      "b1": 1.1,
+      "b2": 1.2,
+      "s1": 0.9,
+      "s2": 0.2,
+      "model": [
+        "3000",
+        0
+      ]
+    },
+    "class_type": "FreeU_V2",
+    "_meta": {
+      "title": "FreeU_V2"
+    }
+  },
+  "3000": {
+    "inputs": {
+      "lora_name": "SDXL_MSPaint_Portrait.safetensors",
+      "strength_model": 1,
+      "strength_clip": 1,
+      "model": [
+        "100",
+        0
+      ],
+      "clip": [
+        "4",
+        1
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA"
+    }
+  },
+  "3001": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}
+}

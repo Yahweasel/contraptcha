@@ -989,6 +989,18 @@ declare let YALAP: any;
                     case "sdxl":
                         html += '<a href="https://stability.ai/stable-image">Stable Diffusion XL</a>';
                         break;
+                    case "pe-bad-medieval-art":
+                        html += '<a href="https://stability.ai/stable-image">SDXL</a> with <a href="https://civitai.com/models/129604?modelVersionId=142084">PE Shitty Medieval Paintings</a>';
+                        break;
+                    case "sdxl-mspaint-portrait":
+                        html += '<a href="https://stability.ai/stable-image">SDXL</a> with <a href="https://civitai.com/models/183354?modelVersionId=205793">SDXL MS Paint Portraits</a>';
+                        break;
+                    case "nicolai-doodle":
+                        html += '<a href="https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5">SD1.5</a> with <a href="https://civitai.com/models/90558/child-type-doodles">child-type doodles</a>';
+                        break;
+                    case "sdxl-loves-trains":
+                        html += '<a href="https://stability.ai/stable-image">SDXL</a> with “train” added to every prompt';
+                        break;
                     default:
                         html += cr;
                 }

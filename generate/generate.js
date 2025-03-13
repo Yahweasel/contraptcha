@@ -25,45 +25,18 @@ const fs = require("fs/promises");
 
 const genImg = require("./generate-img.js");
 
-const width = 1152;
-const height = 896;
-const numWords = 6;
-const negative = "text, watermark, nsfw, penis, vagina, breasts, nude, nudity";
-
-const models = [
-    {
-        name: "shuttle3",
-        m: "models/shuttle/shuttle3Diffusion_bf16.q8_0.gguf",
-        "-vae": "models/flux/ae.safetensors",
-        "-clip_l": "models/flux/clip_l.safetensors",
-        "-t5xxl": "models/flux/t5xxl_fp16.safetensors",
-        "-cfg-scale": "1.0",
-        "-steps": "4"
-    },
-    {
-        name: "pixelwave3schnell",
-        m: "models/pixelwave/pixelwave_flux1Schnell03.q8_0.gguf",
-        "-diffusion-model": "models/pixelwave/pixelwave_flux1Schnell03.q8_0.gguf",
-        "-vae": "models/flux/ae.safetensors",
-        "-clip_l": "models/flux/clip_l.safetensors",
-        "-t5xxl": "models/flux/t5xxl_fp16.safetensors",
-        "-cfg-scale": "1.0",
-        "-steps": "6"
-    },
-    {
-        name: "flux1schnell",
-        m: "models/flux/flux1-schnell-q8_0.gguf",
-        "-diffusion-model": "models/flux/flux1-schnell-q8_0.gguf",
-        "-vae": "models/flux/ae.safetensors",
-        "-clip_l": "models/flux/clip_l.safetensors",
-        "-t5xxl": "models/flux/t5xxl_fp16.safetensors",
-        "-cfg-scale": "1.0",
-        "-steps": "4"
-    },
-    {name: "juggernautxl11", m: "models/juggernautXL_juggXIByRundiffusion.safetensors"},
-];
-
 const backends = require("./backends.json");
+
+const models = require("./models.json");
+const numWords = 6;
+
+function setText(obj, from, to) {
+    obj = obj.inputs;
+    for (const part of ["text", "text_g", "text_l"]) {
+        if (obj[part])
+            obj[part] = obj[part].replace(from, to);
+    }
+}
 
 async function main(args) {
     // Handle arguments
@@ -112,7 +85,7 @@ async function main(args) {
         await fs.mkdir(`out/${seed}`);
     } catch (ex) {}
     await fs.writeFile(`out/${seed}/${seed}.json`, JSON.stringify(words));
-    await fs.writeFile(`out/${seed}/cr.json`, JSON.stringify(models.map(x => x.name)));
+    await fs.writeFile(`out/${seed}/cr.json`, JSON.stringify(models));
     if (meta)
         await fs.writeFile(`out/${seed}/meta.json`, JSON.stringify(meta));
 
@@ -120,52 +93,65 @@ async function main(args) {
         await fs.writeFile(outFile, JSON.stringify(seed));
 
     // Make all the images
-    // For each model...
-    for (let mi = 0; mi < models.length; mi++) {
+    for (let si = 0; si < models.length; si++) {
+        const model = models[si];
+        const promptJSON = await fs.readFile(`models/${model}.json`, "utf8");
+        const ids = [];
         const promises = [];
-
-        const model = models[mi];
-        const modelCmd = [
-            "-W", width,
-            "-H", height,
-            "--sampling-method", "euler"
-        ];
-        for (const key in model) {
-            if (key === "name") continue;
-            modelCmd.push(`-${key}`, model[key]);
-        }
-
-        // For each image...
+        const queues = Array(backends.length).fill(0);
         for (let chidx = 1; chidx < (1<<numWords); chidx++) {
-            const backendIdx = chidx % backends.length;
+            // Wait for the queue to flush
+            while (promises.length >= backends.length * 2)
+                await Promise.race(promises);
+
+            // Choose a queue
+            let queue = 0;
+            let queueLen = queues[queue];
+            for (let qi = 1; qi < queues.length; qi++) {
+                if (queues[qi] < queueLen) {
+                    queue = qi;
+                    queueLen = queues[qi];
+                }
+            }
 
             // And add this to the queue
-            const id = `${seed+mi}_${chidx.toString(16).padStart(2, "0")}`;
+            const id = `${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
+            ids.push(id);
+            queues[queue]++;
+            promises.push((async () => {
+                const oname = `out/${seed}/${id}`;
+                await new Promise(res => setTimeout(res, 0));
 
-            const oname = `${process.cwd()}/out/${seed}/${id}`;
+                try {
+                    console.log(`Generating ${oname} (${queue})`);
 
-            console.log(`Generating ${seed}/${id}`);
+                    // Make the prompt
+                    const parts = [];
+                    for (let i = 0; i < numWords; i++) {
+                        if (!(chidx & (1<<i))) continue;
+                        parts.push(words[i]);
+                    }
+                    const prompt = JSON.parse(promptJSON);
+                    const w = prompt.workflow;
+                    w[prompt.output].inputs.filename_prefix = oname;
+                    w[prompt.seed].inputs.noise_seed = seed + si;
+                    setText(w[prompt.prompt], "@POSITIVE@", parts.join(", "));
+                    setText(w[prompt.negative], "@NEGATIVE@", "text, watermark, nsfw, penis, vagina, breasts, nude, nudity");
 
-            // Make the prompt
-            const parts = [];
-            for (let i = 0; i < numWords; i++) {
-                if (!(chidx & (1<<i))) continue;
-                parts.push(words[i]);
-            }
-            const prompt = {
-                seed: seed+mi,
-                prompt: parts.join(", "),
-                negative
-            };
+                    await genImg.generateImg(
+                        oname, backends[queue], prompt
+                    );
 
-            promises.push(genImg.generateImg(
-                oname, backendIdx, backends[backendIdx], modelCmd, prompt
-            ));
+                } finally {
+                    const idx = ids.indexOf(id);
+                    ids.splice(idx, 1);
+                    queues[queue]--;
+                    promises.splice(idx, 1);
+                }
+            })());
         }
 
-        await genImg.flush();
         await Promise.all(promises);
-        await genImg.flush(true);
     }
 }
 main(process.argv.slice(2));
