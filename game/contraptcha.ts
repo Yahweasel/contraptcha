@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Yahweasel
+ * Copyright (c) 2024, 2025 Yahweasel
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -48,6 +48,8 @@ declare let YALAP: any;
     const creditsPanel = gebi("creditspanel");
     const creditsMsg = gebi("creditsbox");
     const menuPanel = gebi("menupanel");
+    const dailyPanel = gebi("dailypanel");
+    const dailyPanelInp = gebi("dailyinp");
     const msgPanel = gebi("messagepanel");
     const msgPanelMsg = gebi("messagepanelmessage");
     const statsPanel = gebi("statspanel");
@@ -213,6 +215,19 @@ declare let YALAP: any;
             state.hintsPerWord.push(0);
     }
 
+    async function getDailySeeds() {
+        let dailySeeds: number[];
+        try {
+            dailySeeds = await loadJSON(
+                "assets/dailies.json?t=" +
+                Math.floor(new Date().getTime() / 86400000 /* one day */)
+            );
+        } catch (ex) {
+            dailySeeds = [];
+        }
+        return dailySeeds;
+    }
+
     interface ChooseSeedOpts {
         ignoreURL?: boolean;
         daily?: boolean;
@@ -249,7 +264,7 @@ declare let YALAP: any;
         if (seed < 0 && opts.daily) {
             try {
                 seed = await loadJSON(
-                    "assets/daily.json?t=" +
+                    "assets/daily.json?v=1&t=" +
                     Math.floor(new Date().getTime() / 3600000 /* one hour */)
                 );
                 await loadState();
@@ -261,15 +276,7 @@ declare let YALAP: any;
 
         // Or, just choose a random (unbeaten) seed
         if (seed < 0) {
-            let dailySeeds: number[]; 
-            try {
-                dailySeeds = await loadJSON(
-                    "assets/dailies.json?t=" +
-                    Math.floor(new Date().getTime() / 86400000 /* one day */)
-                );
-            } catch (ex) {
-                dailySeeds = [];
-            }
+            const dailySeeds = await getDailySeeds();
             const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2u");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
@@ -807,6 +814,34 @@ declare let YALAP: any;
     }
 
     /**
+     * Show the selector for all daily puzzles.
+     */
+    async function dailiesPanel() {
+        const dailySeeds = await getDailySeeds();
+        const earliest = new Date("2024-01-24");
+        const latest = new Date(
+            earliest.getTime() +
+            (dailySeeds.length-1) * 86400000
+        );
+        dailyPanelInp.min = earliest.toISOString().slice(0, 10);
+        dailyPanelInp.max = dailyPanelInp.value =
+            latest.toISOString().slice(0, 10);
+
+        dailyPanelInp.onchange = () => {
+            const chosenDate = new Date(dailyPanelInp.value);
+            const chosen = Math.round(
+                (chosenDate.getTime() - earliest.getTime()) / 86400000
+            );
+            panel(null);
+            if (chosen >= 0 && chosen < dailySeeds.length)
+                newGame({ignoreURL: true, setSeed: dailySeeds[chosen]});
+        };
+
+        panel(dailyPanel);
+        dailyPanelInp.focus();
+    }
+
+    /**
      * Show game stats (NOTE: this is the stats for *all* games).
      */
     async function stats() {
@@ -1071,6 +1106,7 @@ declare let YALAP: any;
         panel(null);
         newGame({ignoreURL: true, daily: true});
     };
+    gebi("dailiesbtn").onclick = dailiesPanel;
     gebi("newbtn").onclick = () => {
         panel(null);
         newGame({ignoreURL: true});
@@ -1111,7 +1147,7 @@ declare let YALAP: any;
             return;
         ev.preventDefault();
         ev.stopPropagation();
-            
+
         const word = winp.value;
         winp.value = "";
         if (!word.length)
@@ -1125,6 +1161,8 @@ declare let YALAP: any;
                     return restart();
                 else if (cmd === "daily")
                     return newGame({ignoreURL: true, daily: true});
+                else if (cmd === "dailies")
+                    return dailiesPanel();
                 else if (cmd === "newgame" || cmd === "new")
                     return newGame({ignoreURL: true});
                 else if (cmd === "stats")

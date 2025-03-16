@@ -19,7 +19,7 @@
         <meta charset="utf8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Contraptcha</title>
-        <link rel="stylesheet" href="contraptcha.css?v=u" />
+        <link rel="stylesheet" href="contraptcha.css?v=v" />
 
         <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
@@ -211,12 +211,18 @@
             <div id="menupanel" class="panel">
                 <button class="close">x</button>
                 <button id="restartbtn" class="mainbtn menubtn">Restart puzzle</button>
-                <button id="dailybtn" class="mainbtn menubtn">Daily puzzle</button>
+                <button id="dailybtn" class="mainbtn menubtn">Today’s puzzle</button>
+                <button id="dailiesbtn" class="mainbtn menubtn">Past daily puzzles</button>
                 <button id="newbtn" class="mainbtn menubtn">Random puzzle</button>
                 <button id="statsbtn" class="mainbtn menubtn">All puzzles</button>
                 <button id="copystatsbtn" class="mainbtn menubtn">Copy stats</button>
                 <button id="giveupbtn" class="mainbtn menubtn">Give up</button>
                 <button id="introbtn" class="mainbtn menubtn">Introduction</button>
+            </div>
+
+            <div id="dailypanel" class="panel">
+                <button class="close">x</button>
+                <input id="dailyinp" type="date" class="dateinp" />
             </div>
 
             <div id="messagepanel" class="panel">
@@ -237,6 +243,6 @@
         <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/text-metrics@4.0.1/dist/text-metrics.js"></script>
         <script type="text/javascript" src="/assets/libs/yalap-1.0.2-unxz.js"></script>
-        <script type="text/javascript" src="contraptcha.js?v=30"></script>
+        <script type="text/javascript" src="contraptcha.js?v=32"></script>
     </body>
 </html>
