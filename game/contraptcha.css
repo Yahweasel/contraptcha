@@ -253,6 +253,8 @@ button.close:active {
 }
 
 .dateinp {
+    background-color: #111;
+    color: #aaa;
     font-size: 2em;
     margin-top: 1em;
 }
