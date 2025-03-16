@@ -824,8 +824,21 @@ declare let YALAP: any;
             (dailySeeds.length-1) * 86400000
         );
         dailyPanelInp.min = earliest.toISOString().slice(0, 10);
-        dailyPanelInp.max = dailyPanelInp.value =
-            latest.toISOString().slice(0, 10);
+        dailyPanelInp.max = latest.toISOString().slice(0, 10);
+
+        // Set it for the current seed
+        {
+            const currentIdx = dailySeeds.indexOf(seed);
+            if (currentIdx >= 0) {
+                const current = new Date(
+                    earliest.getTime() +
+                    currentIdx * 86400000
+                );
+                dailyPanelInp.value = current.toISOString().slice(0, 10);
+            } else {
+                dailyPanelInp.value = dailyPanelInp.max;
+            }
+        }
 
         dailyPanelInp.onchange = () => {
             const chosenDate = new Date(dailyPanelInp.value);
