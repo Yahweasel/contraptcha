@@ -1,0 +1,152 @@
+{
+    "output": "102",
+    "seed": "10",
+    "prompt": "6",
+    "negative": "7",
+    "workflow":
+{
+  "4": {
+    "inputs": {
+      "ckpt_name": "Lumina2/lumina_2.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "5": {
+    "inputs": {
+      "width": 1152,
+      "height": 896,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent Image"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "You are an assistant designed to generate high-quality images with the highest degree of image-text alignment based on textual prompts. <Prompt Start> @POSITIVE@",
+      "clip": [
+        "4",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "@NEGATIVE@",
+      "clip": [
+        "4",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "10",
+        0
+      ],
+      "vae": [
+        "4",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "10": {
+    "inputs": {
+      "noise_seed": 1,
+      "steps": 20,
+      "cfg": 4,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "start_at_step": 0,
+      "end_at_step": 10000,
+      "var_seed": 0,
+      "var_seed_strength": 0,
+      "sigma_max": -1,
+      "sigma_min": -1,
+      "rho": 7.000000000000002,
+      "add_noise": "enable",
+      "return_with_leftover_noise": "disable",
+      "previews": "default",
+      "tile_sample": false,
+      "tile_size": 1024,
+      "model": [
+        "101",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "SwarmKSampler",
+    "_meta": {
+      "title": "SwarmKSampler"
+    }
+  },
+  "100": {
+    "inputs": {
+      "shift": 6.000000000000001,
+      "model": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingAuraFlow",
+    "_meta": {
+      "title": "ModelSamplingAuraFlow"
+    }
+  },
+  "101": {
+    "inputs": {
+      "cfg_trunc": 100,
+      "renorm_cfg": 1.0000000000000002,
+      "model": [
+        "100",
+        0
+      ]
+    },
+    "class_type": "RenormCFG",
+    "_meta": {
+      "title": "RenormCFG"
+    }
+  },
+  "102": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "8",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}
+}
