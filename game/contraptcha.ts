@@ -264,7 +264,7 @@ declare let YALAP: any;
         if (seed < 0 && opts.daily) {
             try {
                 seed = await loadJSON(
-                    "assets/daily.json?v=1&t=" +
+                    "assets/daily.json?v=2&t=" +
                     Math.floor(new Date().getTime() / 3600000 /* one hour */)
                 );
                 await loadState();
