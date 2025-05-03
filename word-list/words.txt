@@ -1118,7 +1118,6 @@ salad
 salmon
 salon
 salt
-sample
 sand
 sandwich
 satellite
