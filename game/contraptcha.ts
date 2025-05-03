@@ -1013,6 +1013,18 @@ declare let YALAP: any;
                 if (i === credits.length - 1)
                     html += "and ";
                 switch (cr) {
+                    case "hidream-i1-fast":
+                        html += '<a href="https://huggingface.co/HiDream-ai/HiDream-I1-Fast">HiDream-I1 Fast</a>';
+                        break;
+                    case "lumina-2":
+                        html += '<a href="https://huggingface.co/Alpha-VLLM/Lumina-Image-2.0">Lumina-Image-2.0</a>';
+                        break;
+                    case "shuttle-jaguar":
+                        html += '<a href="https://civitai.com/models/1167909/shuttle-jaguar">Shuttle Jaguar</a>';
+                        break;
+                    case "auraflow-0.3":
+                        html += '<a href="https://huggingface.co/fal/AuraFlow-v0.3">AuraFlow v0.3</a>';
+                        break;
                     case "shuttle3":
                         html += '<a href="https://civitai.com/models/943001?modelVersionId=1055701">Shuttle 3 Diffusion</a>';
                         break;
