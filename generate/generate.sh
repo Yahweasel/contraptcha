@@ -4,4 +4,4 @@ set -e
 cd ..
 ROCR_VISIBLE_DEVICES=0 find ./generate/out/$(cat generate/seed.json) -name '*.png' \
     -exec ./easyocr/venv/bin/python3 ./easyocr/eocr.py {} +
-./convert.js
+#./convert.js
