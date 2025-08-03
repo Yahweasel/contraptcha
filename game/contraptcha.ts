@@ -86,6 +86,7 @@ declare let YALAP: any;
     // Game state
     let state: {
         guessed: boolean[],
+        guessOrder: number[],
         guessVals: [string, number][][],
         guessWords: Record<string, boolean>[],
         score: number,
@@ -179,6 +180,7 @@ declare let YALAP: any;
         if (!state) {
             state = {
                 guessed: [],
+                guessOrder: [],
                 guessVals: [],
                 guessWords: [],
                 score: 100,
@@ -632,6 +634,8 @@ declare let YALAP: any;
         let gotIt = words.indexOf(word);
         if (gotIt >= 0 && !state.guessed[gotIt]) {
             state.guessed[gotIt] = true;
+            state.guessOrder = state.guessOrder || [];
+            state.guessOrder.push(gotIt);
             state.guessVals[gotIt] = [];
             state.guessesPerWord[gotIt]++;
             lastGuess = null;
@@ -932,11 +936,20 @@ declare let YALAP: any;
             `Score: ${state.score}${(state.retried || state.gaveUp) ? "*" : ""}\n\n`;
 
         let guessed = state.gaveUpGuessed || state.guessed;
+        const guessOrder = state.guessOrder || [];
         for (let wi = 0; wi < wordCt; wi++) {
             const gct = state.guessesPerWord[wi];
             const hct = state.hintsPerWord[wi];
+            let icon = "🟥";
+            if (guessed[wi]) {
+                const guessO = guessOrder.indexOf(wi);
+                if (guessO >= 0)
+                    icon = String.fromCharCode(0x31 + guessO) + "\u20e3";
+                else
+                    icon = "🟩";
+            }
             stats +=
-                (guessed[wi] ? "🟩" : "🟥") +
+                icon +
                 ` (${gct} guess${(gct === 1) ? "" : "es"}`;
             if (hct)
                 stats += `, ${hct} hint${(hct === 1) ? "" : "s"}`;
