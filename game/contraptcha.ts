@@ -266,7 +266,7 @@ declare let YALAP: any;
         if (seed < 0 && opts.daily) {
             try {
                 seed = await loadJSON(
-                    "assets/daily.json?v=2&t=" +
+                    "assets/daily.json?t=" +
                     Math.floor(new Date().getTime() / 3600000 /* one hour */)
                 );
                 await loadState();
@@ -279,7 +279,7 @@ declare let YALAP: any;
         // Or, just choose a random (unbeaten) seed
         if (seed < 0) {
             const dailySeeds = await getDailySeeds();
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2u");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2w");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
