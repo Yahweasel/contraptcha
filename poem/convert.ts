@@ -1,0 +1,268 @@
+#!/usr/bin/env node
+/*
+ * Copyright (c) 2024, 2025 Yahweasel
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+import * as cproc from "child_process";
+import * as os from "os";
+import * as fs from "fs/promises";
+
+async function run(cmd: string[]) {
+    const p = cproc.spawn(cmd[0], cmd.slice(1), {
+        stdio: ["ignore", "inherit", "inherit"]
+    });
+    await new Promise(res => {
+        p.on("exit", res);
+    });
+}
+
+async function main() {
+    // Read in the dictionary (for limiting hints)
+    const dictionary: Record<string, boolean> = {};
+    for (const word of (await fs.readFile("../word-list/COMMON.TXT", "utf8")).split("\r\n")) {
+        dictionary[word] = true;
+    }
+
+    await run(["mkdir", "-p", "../cache"]);
+
+    // Convert all the seeds
+    const normalSeeds: number[] = [];
+    const hardSeeds: number[] = [];
+    for (const file of await fs.readdir("generate/out")) {
+        const seed = parseInt(file);
+        try {
+            await fs.access(
+                `generate/out/${seed}/${seed+3}_3f.txt`,
+                fs.constants.F_OK
+            );
+        } catch (ex) {
+            console.log(`generate/out/${seed}`);
+            await run(["rm", "-rf", `generate/out/${seed}`]);
+            continue;
+        }
+
+        let meta: any = {};
+        try {
+            meta = JSON.parse(await fs.readFile(
+                `generate/out/${seed}/meta.json`, "utf8"
+            ));
+        } catch (ex) {}
+
+        let valid = true;
+        if (!meta.daily) {
+            if (meta.hard)
+                hardSeeds.push(seed);
+            else
+                normalSeeds.push(seed);
+        }
+
+        try {
+            await fs.access(`game/assets/${seed}/info.json`, fs.constants.F_OK);
+            continue;
+        } catch (ex) {}
+
+        // 1: Make the assets directories
+        await run(["mkdir", "-p", `game/assets/${seed}`]);
+
+        // 2: Convert the poems
+        for (let awi = 1; awi < 64; awi++) {
+            const aws = awi.toString(16).padStart(2, "0");
+            const poems: string[] = [];
+            for (let si = 0;; si++) {
+                let poem: string;
+                try {
+                    poem = await fs.readFile(
+                        `generate/out/${seed}/${seed+si}_${aws}.txt`,
+                        "utf8"
+                    );
+                } catch (ex) {
+                    break;
+                }
+                poems.push(poem);
+            }
+
+            await fs.writeFile(
+                `game/assets/${seed}/${aws}.json`,
+                JSON.stringify(poems)
+            );
+        }
+
+        // 5: Process all the words
+        const info = JSON.parse(await fs.readFile(
+            `generate/out/${seed}/info.json`, "utf8"
+        ));
+        const words: string[] = info.words;
+        for (let wi = 0; wi < words.length; wi++) {
+            const word = words[wi];
+            console.log(`Processing word ${seed}/${wi+1}`);
+
+            // Full dictionary
+            const dj = `game/assets/${seed}/w${wi}`;
+            const cacheD = `../cache/${word}.json`;
+            let cacheExists = false;
+            try {
+                await fs.access(`${cacheD}.xz`, fs.constants.R_OK);
+                cacheExists = true;
+            } catch (ex) {}
+
+            if (!cacheExists) {
+                // Process this word into the cache
+                const h = await fs.open(cacheD, "w");
+                const hw = h.createWriteStream();
+                const p = cproc.spawn(
+                    "../semantic-distance/distance", [
+                        "../semantic-distance/GoogleNews-vectors-negative300.bin",
+                        word
+                    ], {
+                        stdio: ["ignore", "pipe", "inherit"]
+                    }
+                );
+                await new Promise<void>(res => {
+                    p.stdout.on("data", x => hw.write(x));
+                    p.stdout.on("end", () => {
+                        hw.end();
+                        res();
+                    });
+                });
+
+                await run(["xz", cacheD]);
+            }
+
+            // Get it out of the cache
+            {
+                const h = await fs.open(`${dj}.json`, "w");
+                const hw = h.createWriteStream();
+                const p = cproc.spawn("unxz", ["-c", `${cacheD}.xz`], {
+                    stdio: ["ignore", "pipe", "inherit"]
+                });
+                await new Promise<void>(res => {
+                    p.stdout.on("data", x => hw.write(x));
+                    p.stdout.on("end", () => {
+                        hw.end();
+                        res();
+                    });
+                });
+            }
+
+            // Split dictionary
+            await run(["../semantic-distance/split.js", dj]);
+
+            // Get the top words for hints
+            try {
+                const distances = JSON.parse(
+                    await fs.readFile(`${dj}.json`, "utf8"));
+                const wordPairs: [string, number][] = [];
+                for (const word in distances) {
+                    if (dictionary[word])
+                        wordPairs.push([word, distances[word]]);
+                }
+                wordPairs.sort((x, y) => y[1] - x[1]);
+                let max = 0;
+                try {
+                    max = wordPairs[0][1];
+                } catch (ex) {}
+                const top: Record<string, number> = {};
+                for (
+                    let wpi = 0;
+                    wpi < wordPairs.length && wpi < 128;
+                    wpi++
+                ) {
+                    const wp = wordPairs[wpi];
+                    if (wp[1] >= max - 0.2 || wpi < 16)
+                        top[wp[0]] = wp[1];
+                }
+                await fs.writeFile(`${dj}-top.json`, JSON.stringify(top));
+                await run(["xz", `${dj}-top.json`]);
+            } catch (ex) {
+                console.error(ex);
+                valid = false;
+            }
+
+            // Delete the now-unneeded full dictionary
+            await fs.unlink(`${dj}.json`);
+        }
+
+        // 6: Recombine distance lists
+        for (let cc = "a".charCodeAt(0); cc <= "z".charCodeAt(0); cc++) {
+            const c = String.fromCharCode(cc);
+            const distance = Object.create(null);
+            for (let wi = 0; wi < words.length; wi++) {
+                const word = words[wi];
+                const wd = JSON.parse(await fs.readFile(
+                    `game/assets/${seed}/w${wi}-${c}.json`, "utf8"
+                ));
+                if (word[0] === c)
+                    wd[words[wi]] = 1;
+                for (const word in wd) {
+                    if (!distance[word])
+                        distance[word] = Array(words.length).fill(0);
+                    distance[word][wi] = wd[word];
+                }
+            }
+            await fs.writeFile(
+                `game/assets/${seed}/w-${c}.json`,
+                JSON.stringify(distance)
+            );
+            await run(["xz", `game/assets/${seed}/w-${c}.json`]);
+
+            // We now don't need the split dictionary
+            for (let wi = 0; wi < words.length; wi++)
+                await fs.unlink(`game/assets/${seed}/w${wi}-${c}.json`);
+        }
+
+        // 7: Write out the wordlist
+        if (valid) {
+            await run(["cp", `generate/out/${seed}/info.json`, `game/assets/${seed}/info.json`]);
+        } else {
+            if (!meta.daily) {
+                if (meta.hard)
+                    hardSeeds.pop();
+                else
+                    normalSeeds.pop();
+            }
+            console.error(`Seed ${seed} invalid!`);
+        }
+
+        /* 8: Add it to the dailies list. The dailies list is a directory so
+         * that the conversion can run on one system while the daily selection
+         * runs on a different system, and they can synchronize in a
+         * straightforward way, never conflicting on a file. */
+        if (meta.daily) {
+            await run(["mkdir", "-p", "game/assets/dailies"]);
+            await fs.writeFile(
+                `game/assets/dailies/${seed}.json`,
+                JSON.stringify(seed)
+            );
+        }
+    }
+
+    // Maybe exclude old seeds
+    try {
+        const excludeSeeds = JSON.parse(await fs.readFile(
+            `game/assets/exclude-seeds.json`, "utf8"
+        ));
+        for (const seed of excludeSeeds) {
+            const idx = normalSeeds.indexOf(seed);
+            if (idx >= 0)
+                normalSeeds.splice(idx, 1);
+        }
+    } catch (ex) {}
+
+    // Write out the list of seeds
+    await fs.writeFile("game/assets/seeds.json", JSON.stringify(normalSeeds));
+    await fs.writeFile("game/assets/hard-seeds.json", JSON.stringify(hardSeeds));
+}
+
+main();
