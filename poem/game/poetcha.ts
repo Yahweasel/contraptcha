@@ -964,6 +964,10 @@ declare let YALAP: any;
                         html += '<a href="https://huggingface.co/mistralai/Mistral-Small-3.2-24B-Instruct-2506">Mistral Small 2506</a>';
                         break;
 
+                    case "gpt-oss-120b":
+                        html += '<a href="https://huggingface.co/openai/gpt-oss-120b">GPT OSS</a>';
+                        break;
+
                     default:
                         html += cr;
                 }
