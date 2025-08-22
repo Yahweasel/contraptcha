@@ -50,7 +50,7 @@ const formats = [
     "limerick",
     "tanka",
     "clerihew",
-    "AABB quatrain"
+    "ABAB quatrain"
 ];
 
 const template = `Write a @FORM@ about “@WORDS@”, without using any of the words “@WORDS@”. Do not give me any context or explanation, just the @FORM@. After the poem include attribution to a fictional name that fits the theme of the poem.`;
