@@ -74,6 +74,20 @@ for (let ai = 2; ai < process.argv.length; ai++) {
     }
 }
 
+function wordCheck(poem: string, censorWords: string[]) {
+    const words = poem
+        .toLowerCase()
+        .replace(/[^\sa-z]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .split(" ");
+    for (const censorWord of censorWords) {
+        if (words.indexOf(censorWord) >= 0)
+            return true;
+    }
+    return false;
+}
+
 async function main() {
     await fs.mkdir("out", {recursive: true});
     if (seed < 0) {
@@ -135,28 +149,39 @@ async function main() {
             ).replace(/@WORDS@/g, activeWords.join(", ")).replace(/@FORM@/g, format);
 
             ps.push((async () => {
-                const req: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
-                    model,
-                    seed: mseed,
-                    messages: [{
-                        role: "user",
-                        content: msg
-                    }]
-                };
-                modelFixup(model, req);
-                const cmpl = await ai.chat.completions.create(req);
+                for (let si = 0;; si += 1000000) {
+                    const req: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+                        model,
+                        seed: mseed + si,
+                        messages: [{
+                            role: "user",
+                            content: msg
+                        }]
+                    };
+                    modelFixup(model, req);
+                    const cmpl = await ai.chat.completions.create(req);
 
-                const poem = cmpl.choices[0].message.content!
-                    .replace(/^<think>[\s\S]*<\/think>\s*/, "")
-                    .replace(/^[\s\S]*<\|message\|>/, "")
-                    .trim()
-                    .split("\n")
-                    .map(x => x.trim())
-                    .join("\n");
-                await fs.writeFile(
-                    `out/${seed}/${mseed}_${wi.toString(16).padStart(2, "0")}.txt`,
-                    poem
-                );
+                    const poem = cmpl.choices[0].message.content!
+                        .replace(/^<think>[\s\S]*<\/think>\s*/, "")
+                        .replace(/^[\s\S]*<\|message\|>/, "")
+                        .trim()
+                        .split("\n")
+                        .map(x => x.trim())
+                        .join("\n");
+
+                    if (wordCheck(poem, activeWords)) {
+                        // Poem reveals a word
+                        continue;
+                    }
+
+                    const fileBase = `out/${seed}/${mseed}_${wi.toString(16).padStart(2, "0")}`;
+
+                    await fs.writeFile(`${fileBase}.txt`, poem);
+                    await fs.writeFile(`${fileBase}.json`, JSON.stringify({
+                        seed: mseed + si
+                    }));
+                    break;
+                }
 
                 console.error(`${mi}/${models.length} ${wi}/${1<<words.length}`);
             })());
