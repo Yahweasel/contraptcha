@@ -144,8 +144,9 @@ a:hover {
 }
 
 .mainbtn {
+    display: inline-block;
     flex: 1;
-    width: 100%;
+    width: 99%;
     appearance: none;
     background-color: #339;
     border: 2px solid #999;
@@ -153,6 +154,7 @@ a:hover {
     font-size: 1.5em;
     text-transform: uppercase;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .mainbtn:hover {

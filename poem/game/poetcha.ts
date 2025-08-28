@@ -47,6 +47,7 @@ declare let YALAP: any;
     const helpPanel = gebi("helppanel");
     const creditsPanel = gebi("creditspanel");
     const creditsMsg = gebi("creditsbox");
+    const communityPanel = gebi("communitypanel");
     const menuPanel = gebi("menupanel");
     const dailyPanel = gebi("dailypanel");
     const dailyPanelInp = gebi("dailyinp");
@@ -1033,6 +1034,7 @@ declare let YALAP: any;
     gebi("introbtn").onclick = () => panel(introPanel);
     gebi("helpbtn").onclick = () => panel(helpPanel);
     gebi("creditsbtn").onclick = () => showCredits();
+    gebi("communitybtn").onclick = () => panel(communityPanel);
     gebi("restartbtn").onclick = restart;
     gebi("dailybtn").onclick = () => {
         panel(null);
