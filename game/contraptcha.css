@@ -151,7 +151,7 @@ a:hover {
     background-color: #339;
     border: 2px solid #999;
     color: #999;
-    font-size: 1.5em;
+    font-size: calc(min(1.5em, 4.8vw));
     text-transform: uppercase;
     cursor: pointer;
     text-decoration: none;
