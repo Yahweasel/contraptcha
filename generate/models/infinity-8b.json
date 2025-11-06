@@ -1,0 +1,96 @@
+{
+    "generator": "infinity",
+    "output": "15",
+    "seed": "14",
+    "prompt": "14",
+    "workflow":
+{
+  "11": {
+    "inputs": {
+      "vae_type": 14,
+      "vae": "infinity_vae_d56_f8_14_patchify.pth",
+      "device": "default",
+      "apply_spatial_patchify": true
+    },
+    "class_type": "Infinity: Load VAE",
+    "_meta": {
+      "title": "Infinity: Load VAE"
+    }
+  },
+  "12": {
+    "inputs": {
+      "model": "infinity_8b_512x512_weights",
+      "checkpoint_type": "torch_shard",
+      "model_type": "infinity_8b",
+      "pn": "0.25M",
+      "rope2d_each_sa_layer": true,
+      "rope2d_normalized_by_hw": 2,
+      "use_scale_schedule_embedding": true,
+      "use_bit_label": true,
+      "add_lvl_embeding_only_first_block": false,
+      "text_channels": 2048,
+      "use_flex_attn": false,
+      "weight_type": "f8",
+      "vae": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "Infinity: Load model",
+    "_meta": {
+      "title": "Infinity: Load model"
+    }
+  },
+  "13": {
+    "inputs": {
+      "text_encoder": "flan-t5-xl",
+      "device": "default"
+    },
+    "class_type": "Infinity: Load text encoder",
+    "_meta": {
+      "title": "Infinity: Load text encoder"
+    }
+  },
+  "14": {
+    "inputs": {
+      "prompt": "@POSITIVE@",
+      "seed": 1,
+      "cfg": "3",
+      "tau": 1,
+      "cfg_insertion_layer": 0,
+      "sampling_per_bits": 1,
+      "h_div_w_template": 0.75,
+      "enable_positive_prompt": false,
+      "model": [
+        "12",
+        0
+      ],
+      "vae": [
+        "11",
+        0
+      ],
+      "text_encoder": [
+        "13",
+        0
+      ]
+    },
+    "class_type": "Infinity: Generate image",
+    "_meta": {
+      "title": "Infinity: Generate image"
+    }
+  },
+  "15": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "14",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}
+}

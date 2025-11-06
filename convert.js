@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Copyright (c) 2024 Yahweasel
+ * Copyright (c) 2024, 2025 Yahweasel
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -85,9 +85,13 @@ async function main() {
             for (let pi = 1; ; pi++) {
                 const pis = pi.toString(16).padStart(2, "0");
                 const fbase = `${seed+si}_${pi.toString(16).padStart(2, "0")}`;
-                const inFile = `generate/out/${seed}/${seed+si}_${pis}_00001_.png`;
+                const inBase = `generate/out/${seed}/${seed+si}_${pis}_00001_`;
+                const inFile = `${inBase}.png`;
+                const inMkv = `${inBase}.mkv`;
                 const cFile = `censor/out/${seed}/${si}_${pis}.png`;
-                const outFile = `game/assets/${seed}/${si}_${pis}.webp`;
+                const outBase = `game/assets/${seed}/${si}_${pis}`;
+                const outFile = `${outBase}.webp`;
+                const outWebM = `${outBase}.webm`;
 
                 // See if we're done
                 try {
@@ -112,6 +116,23 @@ async function main() {
                     ]);
                     await run(["convert", cFile, "-quality", "66", outFile]);
                     await fs.unlink(cFile);
+
+                    let video = false;
+                    try {
+                        await fs.access(inMkv);
+                        video = true;
+                    } catch (ex) {
+                    }
+
+                    if (video) {
+                        await run([
+                            "ffmpeg",
+                            "-i", inMkv,
+                            "-c:v", "libvpx-vp9",
+                            "-crf", "40",
+                            outWebM
+                        ]);
+                    }
 
                     const idx = convIDs.indexOf(outFile);
                     convIDs.splice(idx, 1);

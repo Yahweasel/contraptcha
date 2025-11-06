@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Yahweasel
+ * Copyright (c) 2024-2025 Yahweasel
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -61,13 +61,31 @@ function run(cmd) {
 }
 
 /**
- * Generate an image with this prompt.
- * @param oname  Output name prefix.
- * @param backend  Backend to send the prompt to.
- * @param prompt  Prompt to use.
- * @param seed  Index to the prompt part with `noise_seed`.
+ * Set this text in a workflow.
  */
-async function generateImg(oname, backend, prompt) {
+function setText(obj, from, to) {
+    obj = obj.inputs;
+    for (const part of ["prompt", "text", "text_g", "text_l"]) {
+        if (obj[part])
+            obj[part] = obj[part].replace(from, to);
+    }
+}
+
+/**
+ * Generate an image with this prompt.
+ */
+async function generate(opts) {
+    const {
+        oname, seed, positive, negative,
+        backend, prompt
+    } = opts;
+
+    const w = JSON.parse(JSON.stringify(prompt.workflow));
+    w[prompt.output].inputs.filename_prefix = oname;
+    w[prompt.seed].inputs.noise_seed = seed;
+    setText(w[prompt.prompt], "@POSITIVE@", positive);
+    setText(w[prompt.negative], "@NEGATIVE@", negative);
+
     // Check if it's already been made
     let exists = false;
     try {
@@ -76,7 +94,7 @@ async function generateImg(oname, backend, prompt) {
     } catch (ex) {}
 
     if (!exists) {
-        await sendPrompt(backend, prompt.workflow);
+        await sendPrompt(backend, w);
 
         // Wait for it to exist
         await waitForFile(`${oname}_00001_.png`);
@@ -94,9 +112,9 @@ async function generateImg(oname, backend, prompt) {
     //console.log(`${oname} nsfw, regenerating...`);
 
     // OK, try more seeds
-    const seedBase = prompt.workflow[prompt.seed].inputs.noise_seed;
+    const seedBase = w[prompt.seed].inputs.noise_seed;
     for (let seedAdd = 1000000000; seedAdd < 16000000000; seedAdd += 1000000000) {
-        prompt.workflow[prompt.seed].inputs.noise_seed = seedBase + seedAdd;
+        w[prompt.seed].inputs.noise_seed = seedBase + seedAdd;
         await sendPrompt(backend, prompt.workflow);
         await waitForFile(`${oname}_00001_.png`);
 
@@ -121,4 +139,11 @@ async function generateImg(oname, backend, prompt) {
     ]);
 }
 
-module.exports = {generateImg};
+module.exports = {
+    steps: 1,
+    sendPrompt,
+    waitForFile,
+    run,
+    setText,
+    generate
+};

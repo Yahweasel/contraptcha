@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Copyright (c) 2024 Yahweasel
+ * Copyright (c) 2024-2025 Yahweasel
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,14 +29,6 @@ const backends = require("./backends.json");
 
 const models = require("./models.json");
 const numWords = 6;
-
-function setText(obj, from, to) {
-    obj = obj.inputs;
-    for (const part of ["text", "text_g", "text_l"]) {
-        if (obj[part])
-            obj[part] = obj[part].replace(from, to);
-    }
-}
 
 async function main(args) {
     // Handle arguments
@@ -95,63 +87,71 @@ async function main(args) {
     // Make all the images
     for (let si = 0; si < models.length; si++) {
         const model = models[si];
-        const promptJSON = await fs.readFile(`models/${model}.json`, "utf8");
-        const ids = [];
-        const promises = [];
-        const queues = Array(backends.length).fill(0);
-        for (let chidx = 1; chidx < (1<<numWords); chidx++) {
-            // Wait for the queue to flush
-            while (promises.length >= backends.length * 2)
-                await Promise.race(promises);
+        const prompt = JSON.parse(await fs.readFile(`models/${model}.json`, "utf8"));
+        let generator = genImg;
+        if (prompt.generator)
+            generator = require(`./generators/${prompt.generator}.js`);
 
-            // Choose a queue
-            let queue = 0;
-            let queueLen = queues[queue];
-            for (let qi = 1; qi < queues.length; qi++) {
-                if (queues[qi] < queueLen) {
-                    queue = qi;
-                    queueLen = queues[qi];
+        for (let step = 0; step < generator.steps; step++) {
+            const ids = [];
+            const promises = [];
+            const queues = Array(backends.length).fill(0);
+            for (let chidx = 1; chidx < (1<<numWords); chidx++) {
+                // Wait for the queue to flush
+                while (promises.length >= backends.length * 2)
+                    await Promise.race(promises);
+
+                // Choose a queue
+                let queue = 0;
+                let queueLen = queues[queue];
+                for (let qi = 1; qi < queues.length; qi++) {
+                    if (queues[qi] < queueLen) {
+                        queue = qi;
+                        queueLen = queues[qi];
+                    }
                 }
+
+                // And add this to the queue
+                const id = `${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
+                ids.push(id);
+                queues[queue]++;
+                promises.push((async () => {
+                    const oname = `out/${seed}/${id}`;
+                    await new Promise(res => setTimeout(res, 0));
+
+                    try {
+                        console.log(`Generating ${oname} (${step+1}/${generator.steps}, ${queue})`);
+
+                        // Make the prompt
+                        const parts = [];
+                        for (let i = 0; i < numWords; i++) {
+                            if (!(chidx & (1<<i))) continue;
+                            parts.push(words[i]);
+                        }
+
+                        await generator.generate(
+                            {
+                                oname,
+                                seed: seed + si,
+                                positive: parts.join(", "),
+                                negative: "text, watermark, nsfw, penis, vagina, breasts, nude, nudity",
+                                step,
+                                backend: backends[queue],
+                                prompt
+                            }
+                        );
+
+                    } finally {
+                        const idx = ids.indexOf(id);
+                        ids.splice(idx, 1);
+                        queues[queue]--;
+                        promises.splice(idx, 1);
+                    }
+                })());
             }
 
-            // And add this to the queue
-            const id = `${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
-            ids.push(id);
-            queues[queue]++;
-            promises.push((async () => {
-                const oname = `out/${seed}/${id}`;
-                await new Promise(res => setTimeout(res, 0));
-
-                try {
-                    console.log(`Generating ${oname} (${queue})`);
-
-                    // Make the prompt
-                    const parts = [];
-                    for (let i = 0; i < numWords; i++) {
-                        if (!(chidx & (1<<i))) continue;
-                        parts.push(words[i]);
-                    }
-                    const prompt = JSON.parse(promptJSON);
-                    const w = prompt.workflow;
-                    w[prompt.output].inputs.filename_prefix = oname;
-                    w[prompt.seed].inputs.noise_seed = seed + si;
-                    setText(w[prompt.prompt], "@POSITIVE@", parts.join(", "));
-                    setText(w[prompt.negative], "@NEGATIVE@", "text, watermark, nsfw, penis, vagina, breasts, nude, nudity");
-
-                    await genImg.generateImg(
-                        oname, backends[queue], prompt
-                    );
-
-                } finally {
-                    const idx = ids.indexOf(id);
-                    ids.splice(idx, 1);
-                    queues[queue]--;
-                    promises.splice(idx, 1);
-                }
-            })());
+            await Promise.all(promises);
         }
-
-        await Promise.all(promises);
     }
 }
 main(process.argv.slice(2));

@@ -27,6 +27,7 @@ declare let YALAP: any;
 
     const imageCt = 4;
     const wordCt = 6;
+    const videoModels = {"wan-2.2": 1};
 
     // Get all our references
     const mainBox = gebi("main");
@@ -303,7 +304,7 @@ declare let YALAP: any;
 
         words = await loadJSON(`assets/${seed}/w.json?v=1`);
         similarity = Object.create(null);
-        credits = null;
+        credits = await loadJSON(`assets/${seed}/cr.json`);
         hintFiles = {};
     }
 
@@ -425,9 +426,24 @@ declare let YALAP: any;
     function drawImages() {
         const gidx = guessIndex();
         for (let i = 0; i < 4; i++) {
-            const src = `assets/${seed}/${i}_${gidx}.webp`;
-            loadImage(imgs[i], src);
-            imgs[i].onclick = () => popOutImage(i);
+            imgBoxes[i].innerHTML = "";
+            if (credits && videoModels[credits[i]]) {
+                const vid = document.createElement("video");
+                vid.controls = false;
+                vid.muted = vid.defaultMuted = true;
+                vid.autoplay = true;
+                vid.loop = true;
+                vid.src = `assets/${seed}/${i}_${gidx}.webm`;
+                imgBoxes[i].appendChild(vid);
+                vid.onclick = () => popOutVideo(vid, i);
+
+            } else {
+                imgBoxes[i].appendChild(imgs[i]);
+                const src = `assets/${seed}/${i}_${gidx}.webp`;
+                loadImage(imgs[i], src);
+                imgs[i].onclick = () => popOutImage(i);
+
+            }
         }
     }
 
@@ -444,10 +460,41 @@ declare let YALAP: any;
             return;
         }
 
+        imgPanel.innerHTML = "";
+        imgPanel.appendChild(imgPanelImg);
         imgPanelImg.src = imgPanelSrc = src;
         panelGuard.style.display = "";
         imgPanel.style.display = "";
         imgPanel.onclick = imgPanelImg.onclick = () => {
+            panel(null);
+        };
+
+        const url = new URL(document.location.href);
+        url.hash = "";
+        url.search = `?s=${seed}&i=${idx}_${gidx}`;
+        window.history.replaceState({}, `Contraptcha — ${seed}`, url.toString());
+    }
+
+    /**
+     * Pop out (highlight) a particular video.
+     */
+    function popOutVideo(vid: HTMLVideoElement, idx: number) {
+        const gidx = guessIndex();
+
+        if (imgPanelSrc === vid.src && imgPanel.style.display === "") {
+            // Toggle it
+            panel(null);
+            imgBoxes[idx].innerHTML = "";
+            imgBoxes[idx].appendChild(vid);
+            return;
+        }
+
+        imgPanel.innerHTML = "";
+        imgPanel.appendChild(vid);
+        imgPanelSrc = vid.src;
+        panelGuard.style.display = "";
+        imgPanel.style.display = "";
+        imgPanel.onclick = () => {
             panel(null);
         };
 
@@ -1015,72 +1062,84 @@ declare let YALAP: any;
      * Show the credits panel, complete with credits.
      */
     async function showCredits() {
-        if (!credits) {
-            credits = await loadJSON(`assets/${seed}/cr.json`);
+        // Turn it into links
+        let html = "";
+        for (let i = 0; i < credits.length; i++) {
+            const cr = credits[i];
+            if (i !== 0)
+                html += ", ";
+            if (i === credits.length - 1)
+                html += "and ";
+            switch (cr) {
+                case "hunyuan-image-2.1":
+                    html += '<a href="https://huggingface.co/tencent/HunyuanImage-2.1">HunyuanImage 2.1</a>';
+                    break;
 
-            // Turn it into links
-            let html = "";
-            for (let i = 0; i < credits.length; i++) {
-                const cr = credits[i];
-                if (i !== 0)
-                    html += ", ";
-                if (i === credits.length - 1)
-                    html += "and ";
-                switch (cr) {
-                    case "hidream-i1-fast":
-                        html += '<a href="https://huggingface.co/HiDream-ai/HiDream-I1-Fast">HiDream-I1 Fast</a>';
-                        break;
-                    case "lumina-2":
-                        html += '<a href="https://huggingface.co/Alpha-VLLM/Lumina-Image-2.0">Lumina-Image-2.0</a>';
-                        break;
-                    case "shuttle-jaguar":
-                        html += '<a href="https://civitai.com/models/1167909/shuttle-jaguar">Shuttle Jaguar</a>';
-                        break;
-                    case "auraflow-0.3":
-                        html += '<a href="https://huggingface.co/fal/AuraFlow-v0.3">AuraFlow v0.3</a>';
-                        break;
-                    case "shuttle3":
-                        html += '<a href="https://civitai.com/models/943001?modelVersionId=1055701">Shuttle 3 Diffusion</a>';
-                        break;
-                    case "pixelwave3schnell":
-                        html += '<a href="https://civitai.com/models/141592?modelVersionId=1002647">PixelWave</a>';
-                        break;
-                    case "juggernautxl11":
-                        html += '<a href="https://civitai.com/models/133005?modelVersionId=782002">Juggernaut XL</a>';
-                        break;
-                    case "juggernautxl8":
-                        html += '<a href="https://civitai.com/models/133005?modelVersionId=288982">Juggernaut XL</a>';
-                        break;
-                    case "realvisxl3.0turbo":
-                        html += '<a href="https://civitai.com/models/139562?modelVersionId=272378">RealVisXL</a>';
-                        break;
-                    case "dreamshaperxlsfwturbo":
-                        html += '<a href="https://civitai.com/models/112902?modelVersionId=302806">DreamShaper XL</a>';
-                        break;
-                    case "flux1schnell":
-                        html += '<a href="https://huggingface.co/black-forest-labs/FLUX.1-schnell">FLUX.1 Schnell</a>';
-                        break;
-                    case "sdxl":
-                        html += '<a href="https://stability.ai/stable-image">Stable Diffusion XL</a>';
-                        break;
-                    case "pe-bad-medieval-art":
-                        html += '<a href="https://stability.ai/stable-image">SDXL</a> with <a href="https://civitai.com/models/129604?modelVersionId=142084">PE Shitty Medieval Paintings</a>';
-                        break;
-                    case "sdxl-mspaint-portrait":
-                        html += '<a href="https://stability.ai/stable-image">SDXL</a> with <a href="https://civitai.com/models/183354?modelVersionId=205793">SDXL MS Paint Portraits</a>';
-                        break;
-                    case "nicolai-doodle":
-                        html += '<a href="https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5">SD1.5</a> with <a href="https://civitai.com/models/90558/child-type-doodles">child-type doodles</a>';
-                        break;
-                    case "sdxl-loves-trains":
-                        html += '<a href="https://stability.ai/stable-image">SDXL</a> with “train” added to every prompt';
-                        break;
-                    default:
-                        html += cr;
-                }
+                case "qwen-image":
+                    html += '<a href="https://huggingface.co/Qwen/Qwen-Image">Qwen-Image</a> with <a href="https://huggingface.co/lightx2v/Qwen-Image-Lightning">Qwen-Image-Lightning</a>';
+                    break;
+
+                case "wan-2.2":
+                    html += '<a href="https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B">Wan2.2</a> with <a href="https://huggingface.co/lightx2v/Wan2.2-Lightning">Wan2.2-Lightning</a>';
+                    break;
+
+                case "infinity-8b":
+                    html += '<a href="https://huggingface.co/FoundationVision/Infinity">Infinity 8B-512x512</a>';
+                    break;
+
+                case "hidream-i1-fast":
+                    html += '<a href="https://huggingface.co/HiDream-ai/HiDream-I1-Fast">HiDream-I1 Fast</a>';
+                    break;
+                case "lumina-2":
+                    html += '<a href="https://huggingface.co/Alpha-VLLM/Lumina-Image-2.0">Lumina-Image-2.0</a>';
+                    break;
+                case "shuttle-jaguar":
+                    html += '<a href="https://civitai.com/models/1167909/shuttle-jaguar">Shuttle Jaguar</a>';
+                    break;
+                case "auraflow-0.3":
+                    html += '<a href="https://huggingface.co/fal/AuraFlow-v0.3">AuraFlow v0.3</a>';
+                    break;
+                case "shuttle3":
+                    html += '<a href="https://civitai.com/models/943001?modelVersionId=1055701">Shuttle 3 Diffusion</a>';
+                    break;
+                case "pixelwave3schnell":
+                    html += '<a href="https://civitai.com/models/141592?modelVersionId=1002647">PixelWave</a>';
+                    break;
+                case "juggernautxl11":
+                    html += '<a href="https://civitai.com/models/133005?modelVersionId=782002">Juggernaut XL</a>';
+                    break;
+                case "juggernautxl8":
+                    html += '<a href="https://civitai.com/models/133005?modelVersionId=288982">Juggernaut XL</a>';
+                    break;
+                case "realvisxl3.0turbo":
+                    html += '<a href="https://civitai.com/models/139562?modelVersionId=272378">RealVisXL</a>';
+                    break;
+                case "dreamshaperxlsfwturbo":
+                    html += '<a href="https://civitai.com/models/112902?modelVersionId=302806">DreamShaper XL</a>';
+                    break;
+                case "flux1schnell":
+                    html += '<a href="https://huggingface.co/black-forest-labs/FLUX.1-schnell">FLUX.1 Schnell</a>';
+                    break;
+                case "sdxl":
+                    html += '<a href="https://stability.ai/stable-image">Stable Diffusion XL</a>';
+                    break;
+                case "pe-bad-medieval-art":
+                    html += '<a href="https://stability.ai/stable-image">SDXL</a> with <a href="https://civitai.com/models/129604?modelVersionId=142084">PE Shitty Medieval Paintings</a>';
+                    break;
+                case "sdxl-mspaint-portrait":
+                    html += '<a href="https://stability.ai/stable-image">SDXL</a> with <a href="https://civitai.com/models/183354?modelVersionId=205793">SDXL MS Paint Portraits</a>';
+                    break;
+                case "nicolai-doodle":
+                    html += '<a href="https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5">SD1.5</a> with <a href="https://civitai.com/models/90558/child-type-doodles">child-type doodles</a>';
+                    break;
+                case "sdxl-loves-trains":
+                    html += '<a href="https://stability.ai/stable-image">SDXL</a> with “train” added to every prompt';
+                    break;
+                default:
+                    html += cr;
             }
-            creditsMsg.innerHTML = html;
         }
+        creditsMsg.innerHTML = html;
         panel(creditsPanel);
     }
 
