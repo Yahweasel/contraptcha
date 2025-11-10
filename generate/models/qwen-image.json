@@ -1,7 +1,7 @@
 {
     "generator": "separate-latents",
     "input": "3001",
-    "output": ["3001", "3002"],
+    "output": ["3002", "3002"],
     "seed": "10",
     "prompt": "6",
     "negative": "7",
@@ -9,11 +9,12 @@
 {
   "4": {
     "inputs": {
-      "unet_name": "qwen-image/qwen-image-Q6_K.gguf"
+      "unet_name": "qwen-image/qwen_image_fp8_e4m3fn.safetensors",
+      "weight_dtype": "fp8_e4m3fn"
     },
-    "class_type": "UnetLoaderGGUF",
+    "class_type": "UNETLoader",
     "_meta": {
-      "title": "Unet Loader (GGUF)"
+      "title": "Load Diffusion Model"
     }
   },
   "5": {
@@ -137,7 +138,7 @@
       "title": "Load LoRA"
     }
   },
-  "3001": {
+  "3002": {
     "inputs": {
       "filename_prefix": "latents/ComfyUI",
       "samples": [
