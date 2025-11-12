@@ -21,26 +21,33 @@ const fs = require("fs/promises");
  * Send this prompt to the AI.
  */
 async function sendPrompt(backend, prompt) {
-    const f = await fetch(`${backend}/prompt`, {
-        method: "POST",
-        headers: {"content-type": "application/json"},
-        body: JSON.stringify({prompt})
-    });
-    await f.text();
-}
-
-/**
- * Wait for this file to exist.
- */
-async function waitForFile(name) {
-    while (true) {
+    const timeout = Date.now() + 600000;
+    for (let tries = 0; tries < 3; tries++) {
         try {
-            await fs.access(name, fs.constants.F_OK);
-            break;
+            const f = await fetch(`${backend}/prompt`, {
+                method: "POST",
+                headers: {"content-type": "application/json"},
+                body: JSON.stringify({prompt})
+            });
+            const res = await f.json();
+            const id = res.prompt_id;
+
+            while (true) {
+                const f = await fetch(`${backend}/history/${id}`);
+                const res = await f.json();
+                if (res && res[id] && res[id].status) {
+                    if (res[id].status.status_str === "success")
+                        return true;
+                    else if (res[id].status.status_str === "error" || res[id].status.completed)
+                        break;
+                }
+                await new Promise(res => setTimeout(res, 250));
+                if (Date.now() >= timeout)
+                    return false;
+            }
         } catch (ex) {}
-        await new Promise(res => setTimeout(res, 1000));
     }
-    await new Promise(res => setTimeout(res, 1000));
+    return false;
 }
 
 /**
@@ -51,7 +58,7 @@ function run(cmd) {
         const p = cproc.spawn(cmd[0], cmd.slice(1), {
             stdio: ["ignore", "inherit", "inherit"]
         });
-        p.on("exit", (code, signal) => {
+        p.on("exit", code => {
             if (code === null)
                 res(-1);
             else
@@ -94,10 +101,8 @@ async function generate(opts) {
     } catch (ex) {}
 
     if (!exists) {
-        await sendPrompt(backend, w);
-
-        // Wait for it to exist
-        await waitForFile(`${oname}_00001_.png`);
+        if (!await sendPrompt(backend, w))
+            return false;
     }
 
     // Check if it's NSFW
@@ -105,7 +110,7 @@ async function generate(opts) {
         "../nsfw/venv/bin/python3", "../nsfw/nsfw-detect.py",
         `${oname}_00001_.png`
     ]);
-    if (!nsfw1) return;
+    if (!nsfw1) return true;
 
     await fs.rename(`${oname}_00001_.png`, `${oname}_nsfw_0.png`);
 
@@ -115,15 +120,15 @@ async function generate(opts) {
     const seedBase = w[prompt.seed].inputs.noise_seed;
     for (let seedAdd = 1000000000; seedAdd < 16000000000; seedAdd += 1000000000) {
         w[prompt.seed].inputs.noise_seed = seedBase + seedAdd;
-        await sendPrompt(backend, prompt.workflow);
-        await waitForFile(`${oname}_00001_.png`);
+        if (!await sendPrompt(backend, prompt.workflow))
+            return false;
 
         // Still NSFW?
         const nsfw2 = await run([
             "../nsfw/venv/bin/python3", "../nsfw/nsfw-detect.py",
             `${oname}_00001_.png`
         ]);
-        if (!nsfw2) return;
+        if (!nsfw2) return true;
 
         // Move away this one
         await fs.rename(`${oname}_00001_.png`, `${oname}_nsfw_${seedAdd}.png`);
@@ -137,12 +142,13 @@ async function generate(opts) {
         "../nsfw/nsfw-censor.py",
         `${oname}_nsfw_0.png`, `${oname}_00001_.png`
     ]);
+
+    return true;
 }
 
 module.exports = {
     steps: 1,
     sendPrompt,
-    waitForFile,
     run,
     setText,
     generate

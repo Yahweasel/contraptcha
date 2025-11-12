@@ -48,14 +48,12 @@ async function generate(opts) {
     } catch (ex) {}
 
     if (!exists) {
-        await genImg.sendPrompt(backend, w);
-
-        // Wait for it to exist
-        await genImg.waitForFile(`${oname}${suffix}`);
+        if (!await genImg.sendPrompt(backend, w))
+            return false;
     }
 
     if (step === 0)
-        return;
+        return true;
 
     // Check if it's NSFW
     const nsfw = await genImg.run([
@@ -64,7 +62,7 @@ async function generate(opts) {
     ]);
     if (!nsfw) {
         await fs.rename(`${oname}_00002_.png`, `${oname}_00001_.png`);
-        return;
+        return true;
     }
 
     await fs.rename(`${oname}_00002_.png`, `${oname}_nsfw_0.png`);
@@ -75,6 +73,8 @@ async function generate(opts) {
         "../nsfw/nsfw-censor.py",
         `${oname}_nsfw_0.png`, `${oname}_00001_.png`
     ]);
+
+    return true;
 }
 
 module.exports = {

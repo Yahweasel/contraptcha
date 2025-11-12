@@ -84,74 +84,106 @@ async function main(args) {
     if (outFile)
         await fs.writeFile(outFile, JSON.stringify(seed));
 
-    // Make all the images
+    // Make all the tasks
+    const tasks = [];
     for (let si = 0; si < models.length; si++) {
         const model = models[si];
         const prompt = JSON.parse(await fs.readFile(`models/${model}.json`, "utf8"));
         let generator = genImg;
         if (prompt.generator)
             generator = require(`./generators/${prompt.generator}.js`);
-
         for (let step = 0; step < generator.steps; step++) {
-            const ids = [];
-            const promises = [];
-            const queues = Array(backends.length).fill(0);
             for (let chidx = 1; chidx < (1<<numWords); chidx++) {
-                // Wait for the queue to flush
-                while (promises.length >= backends.length * 2)
-                    await Promise.race(promises);
+                // Make the name
+                const id = `${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
+                const oname = `out/${seed}/${id}`;
 
-                // Choose a queue
-                let queue = 0;
-                let queueLen = queues[queue];
-                for (let qi = 1; qi < queues.length; qi++) {
-                    if (queues[qi] < queueLen) {
-                        queue = qi;
-                        queueLen = queues[qi];
-                    }
+                // Make the prompt
+                const parts = [];
+                for (let i = 0; i < numWords; i++) {
+                    if (!(chidx & (1<<i))) continue;
+                    parts.push(words[i]);
                 }
 
-                // And add this to the queue
-                const id = `${seed+si}_${chidx.toString(16).padStart(2, "0")}`;
-                ids.push(id);
-                queues[queue]++;
-                promises.push((async () => {
-                    const oname = `out/${seed}/${id}`;
-                    await new Promise(res => setTimeout(res, 0));
+                // Make the task
+                tasks.push({
+                    oname,
+                    seed: seed + si,
+                    positive: parts.join(", "),
+                    model,
+                    generator,
+                    step,
+                    prompt
+                });
+            }
+        }
+    }
 
-                    try {
-                        console.log(`Generating ${oname} (${step+1}/${generator.steps}, ${queue})`);
+    // Make our queues
+    const queues = Array(backends.length * 2).fill(Promise.all([]));
+    const qBackends = queues.map((_, idx) => backends[idx%backends.length]);
+    let lastTask = {};
 
-                        // Make the prompt
-                        const parts = [];
-                        for (let i = 0; i < numWords; i++) {
-                            if (!(chidx & (1<<i))) continue;
-                            parts.push(words[i]);
-                        }
+    // Run the tasks
+    while (true) {
+        // Make sure there are tasks
+        if (!tasks.length)
+            await Promise.all(queues);
+        if (!tasks.length)
+            break;
 
-                        await generator.generate(
-                            {
-                                oname,
-                                seed: seed + si,
-                                positive: parts.join(", "),
-                                negative: "text, watermark, nsfw, penis, vagina, breasts, nude, nudity",
-                                step,
-                                backend: backends[queue],
-                                prompt
-                            }
-                        );
+        // Choose a task
+        const task = tasks.shift();
+        if (task.model !== lastTask.model || task.step !== lastTask.step) {
+            // Finish the last step
+            await Promise.all(queues);
+        }
+        lastTask = task;
 
-                    } finally {
-                        const idx = ids.indexOf(id);
-                        ids.splice(idx, 1);
-                        queues[queue]--;
-                        promises.splice(idx, 1);
-                    }
-                })());
+        // Choose a queue
+        let qIdx = qBackends.length;
+        while (qIdx >= qBackends.length)
+            qIdx = await Promise.race(queues.map((x, idx) => x.then(() => idx)));
+        const backend = qBackends[qIdx];
+
+        // And add it to the queue
+        const p = (async () => {
+            console.log(
+                `Generating ${task.oname} (${task.model}, ` +
+                `step ${task.step+1}/${task.generator.steps}, ` +
+                `queue ${qIdx+1}/${queues.length})`
+            );
+            let result = false;
+            try {
+                result = await task.generator.generate({
+                    oname: task.oname,
+                    seed: task.seed,
+                    positive: task.positive,
+                    negative: "text, watermark, nsfw, penis, vagina, breasts, nude, nudity",
+                    step: task.step,
+                    backend,
+                    prompt: task.prompt
+                });
+            } catch (ex) {
+                console.error(ex);
             }
 
-            await Promise.all(promises);
-        }
+            if (!result) {
+                // Kill this queue
+                console.error(`Backend ${backend} nonfunctional?`);
+                const qIdx = queues.indexOf(p);
+                if (qIdx >= 0) {
+                    queues.splice(qIdx, 1);
+                    qBackends.splice(qIdx, 1);
+                }
+
+                // And requeue this task
+                tasks.unshift(task);
+            }
+
+            return result;
+        })();
+        queues[qIdx] = p;
     }
 }
 main(process.argv.slice(2));

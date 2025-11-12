@@ -59,16 +59,16 @@ async function generate(opts) {
     } catch (ex) {}
 
     if (!exists) {
-        await genImg.sendPrompt(backend, w);
-
-        // Wait for it to exist
-        await genImg.waitForFile(`${oname}${suffix}`);
+        if (!await genImg.sendPrompt(backend, w))
+            return false;
     }
 
     if (step === 2) {
         await fs.rename(`${oname}_00003.png`, `${oname}_00001_.png`);
         await fs.rename(`${oname}_00003.mkv`, `${oname}_00001_.mkv`);
     }
+
+    return true;
 }
 
 module.exports = {

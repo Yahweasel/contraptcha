@@ -35,10 +35,8 @@ async function generate(opts) {
     } catch (ex) {}
 
     if (!exists) {
-        await genImg.sendPrompt(backend, w);
-
-        // Wait for it to exist
-        await genImg.waitForFile(`${oname}_00001_.png`);
+        if (!await genImg.sendPrompt(backend, w))
+            return false;
     }
 
     // Check if it's NSFW
@@ -46,7 +44,7 @@ async function generate(opts) {
         "../nsfw/venv/bin/python3", "../nsfw/nsfw-detect.py",
         `${oname}_00001_.png`
     ]);
-    if (!nsfw1) return;
+    if (!nsfw1) return true;
 
     await fs.rename(`${oname}_00001_.png`, `${oname}_nsfw_0.png`);
 
@@ -54,15 +52,15 @@ async function generate(opts) {
     const seedBase = w[prompt.seed].inputs.seed;
     for (let seedAdd = 1000000000; seedAdd < 16000000000; seedAdd += 1000000000) {
         w[prompt.seed].inputs.seed = seedBase + seedAdd;
-        await genImg.sendPrompt(backend, prompt.workflow);
-        await genImg.waitForFile(`${oname}_00001_.png`);
+        if (!await genImg.sendPrompt(backend, prompt.workflow))
+            return false;
 
         // Still NSFW?
         const nsfw2 = await genImg.run([
             "../nsfw/venv/bin/python3", "../nsfw/nsfw-detect.py",
             `${oname}_00001_.png`
         ]);
-        if (!nsfw2) return;
+        if (!nsfw2) return true;
 
         // Move away this one
         await fs.rename(`${oname}_00001_.png`, `${oname}_nsfw_${seedAdd}.png`);
@@ -74,6 +72,8 @@ async function generate(opts) {
         "../nsfw/nsfw-censor.py",
         `${oname}_nsfw_0.png`, `${oname}_00001_.png`
     ]);
+
+    return true;
 }
 
 module.exports = {
