@@ -137,6 +137,22 @@ async function main(args) {
         if (task.model !== lastTask.model || task.step !== lastTask.step) {
             // Finish the last step
             await Promise.all(queues);
+            if (task.model !== lastTask.model) {
+                // Clear the cache
+                await Promise.all(backends.map(async backend => {
+                    try {
+                        const f = await fetch(`${backend}/free`, {
+                            method: "POST",
+                            headers: {"content-type": "application/json"},
+                            body: JSON.stringify({
+                                unload_models: true,
+                                free_memory: true
+                            })
+                        });
+                        await f.text();
+                    } catch (ex) {}
+                }));
+            }
         }
         lastTask = task;
 
