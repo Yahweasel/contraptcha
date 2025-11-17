@@ -25,8 +25,6 @@ const fs = require("fs/promises");
 
 const genImg = require("./generate-img.js");
 
-const backends = require("./backends.json");
-
 const models = require("./models.json");
 const numWords = 6;
 
@@ -59,7 +57,6 @@ async function main(args) {
     if (words.length !== numWords) {
         console.error(`Use: ./generate.js [-m metadata] <${numWords} words>`);
         process.exit(1);
-        return;
     }
 
     // Choose an unused seed
@@ -120,23 +117,63 @@ async function main(args) {
     }
 
     // Make our queues
-    const queues = Array(backends.length * 2).fill(Promise.all([]));
-    const qBackends = queues.map((_, idx) => backends[idx%backends.length]);
+    let backendsStr = await fs.readFile("backends.json", "utf8");
+    let backends = JSON.parse(backendsStr);
+    let queues;
+    function mkQueues() {
+        queues = Object.create(null);
+        for (const backend of backends) {
+            queues[backend] = {
+                promises: Array(2).fill(Promise.all([]))
+            };
+        }
+    }
+    mkQueues();
     let lastTask = {};
+
+    async function allQueues() {
+        for (const key in queues) {
+            const queue = queues[key];
+            await Promise.all(queue.promises);
+        }
+    }
+
+    function nextQueue() {
+        let ret = [];
+        for (const key in queues) {
+            const queue = queues[key];
+            ret = ret.concat(queue.promises.map((x, idx) => x.then(() => [key, idx])));
+        }
+        return Promise.race(ret);
+    }
 
     // Run the tasks
     while (true) {
         // Make sure there are tasks
         if (!tasks.length)
-            await Promise.all(queues);
+            await allQueues();
         if (!tasks.length)
             break;
+
+        // Check the backends
+        try {
+            const newBackendsStr = await fs.readFile("backends.json", "utf8");
+            if (newBackendsStr !== backendsStr) {
+                const newBackends = JSON.parse(newBackendsStr);
+                await allQueues();
+                backendsStr = newBackendsStr;
+                backends = newBackends;
+                mkQueues();
+            }
+        } catch (ex) {
+            console.error(ex);
+        }
 
         // Choose a task
         const task = tasks.shift();
         if (task.model !== lastTask.model || task.step !== lastTask.step) {
             // Finish the last step
-            await Promise.all(queues);
+            await allQueues();
             if (task.model !== lastTask.model) {
                 // Clear the cache
                 await Promise.all(backends.map(async backend => {
@@ -157,17 +194,16 @@ async function main(args) {
         lastTask = task;
 
         // Choose a queue
-        let qIdx = qBackends.length;
-        while (qIdx >= qBackends.length)
-            qIdx = await Promise.race(queues.map((x, idx) => x.then(() => idx)));
-        const backend = qBackends[qIdx];
+        let [backend, qIdx] = await nextQueue();
+        while (qIdx >= queues[backend].promises.length)
+            [backend, qIdx] = await nextQueue();
 
         // And add it to the queue
         const p = (async () => {
             console.log(
                 `Generating ${task.oname} (${task.model}, ` +
                 `step ${task.step+1}/${task.generator.steps}, ` +
-                `queue ${qIdx+1}/${queues.length})`
+                `queue ${backend}:${qIdx+1})`
             );
             let result = false;
             try {
@@ -187,11 +223,9 @@ async function main(args) {
             if (!result) {
                 // Kill this queue
                 console.error(`Backend ${backend} nonfunctional?`);
-                const qIdx = queues.indexOf(p);
-                if (qIdx >= 0) {
-                    queues.splice(qIdx, 1);
-                    qBackends.splice(qIdx, 1);
-                }
+                const qIdx = queues[backend].promises.indexOf(p);
+                if (qIdx >= 0)
+                    queues[backend].promises.splice(qIdx, 1);
 
                 // And requeue this task
                 tasks.unshift(task);
@@ -199,7 +233,7 @@ async function main(args) {
 
             return result;
         })();
-        queues[qIdx] = p;
+        queues[backend].promises[qIdx] = p;
     }
 }
 main(process.argv.slice(2));
