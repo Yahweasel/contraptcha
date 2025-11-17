@@ -70,6 +70,9 @@ declare let YALAP: any;
         const img = imgs[i] = dce("img");
         imgBoxes[i].appendChild(img);
     }
+    const popOut: (()=>unknown)[] = [];
+    while (popOut.length < imageCt)
+        popOut.push(()=>{});
 
     // Create five rows for each wordguess box
     const wgRows: HTMLElement[][] = [];
@@ -435,13 +438,13 @@ declare let YALAP: any;
                 vid.loop = true;
                 vid.src = `assets/${seed}/${i}_${gidx}.webm`;
                 imgBoxes[i].appendChild(vid);
-                vid.onclick = () => popOutVideo(vid, i);
+                vid.onclick = popOut[i] = () => popOutVideo(vid, i);
 
             } else {
                 imgBoxes[i].appendChild(imgs[i]);
                 const src = `assets/${seed}/${i}_${gidx}.webp`;
                 loadImage(imgs[i], src);
-                imgs[i].onclick = () => popOutImage(i);
+                imgs[i].onclick = popOut[i] = () => popOutImage(i);
 
             }
         }
@@ -1235,7 +1238,7 @@ declare let YALAP: any;
                 "$": 3
             })[ev.key] || 0;
             if (!modalPanel)
-                popOutImage(idx);
+                popOut[idx]();
             return;
         }
         if (ev.key === "Escape") {
