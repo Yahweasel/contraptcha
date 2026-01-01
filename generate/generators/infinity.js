@@ -14,6 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+const fs = require("fs/promises");
+
 const genImg = require("../generate-img.js");
 
 async function generate(opts) {
@@ -52,7 +54,7 @@ async function generate(opts) {
     const seedBase = w[prompt.seed].inputs.seed;
     for (let seedAdd = 1000000000; seedAdd < 16000000000; seedAdd += 1000000000) {
         w[prompt.seed].inputs.seed = seedBase + seedAdd;
-        if (!await genImg.sendPrompt(backend, prompt.workflow))
+        if (!await genImg.sendPrompt(backend, w))
             return false;
 
         // Still NSFW?

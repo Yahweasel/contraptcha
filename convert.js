@@ -46,13 +46,18 @@ async function main() {
     const hardSeeds = [];
     for (const file of await fs.readdir("generate/out")) {
         const seed = parseInt(file);
+        const outWords = `game/assets/${seed}/w.json`;
         try {
             await fs.access(
                 `generate/out/${seed}/${seed+3}_3f_00001_.png.ocr.json`,
                 fs.constants.F_OK
             );
         } catch (ex) {
-            continue;
+            try {
+                await fs.access(outWords, fs.constants.F_OK);
+            } catch (ex) {
+                continue;
+            }
         }
 
         let meta = {};
@@ -70,7 +75,6 @@ async function main() {
                 normalSeeds.push(seed);
         }
 
-        const outWords = `game/assets/${seed}/w.json`;
         try {
             await fs.access(outWords, fs.constants.F_OK);
             continue;
