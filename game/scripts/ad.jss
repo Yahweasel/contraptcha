@@ -19,7 +19,18 @@ const fs = require("fs/promises");
 let type = "b";
 if (request.query && request.query.t && request.query.t === "s")
     type = "s";
-const files = await fs.readdir(`${__dirname}/../assets/ads`);
+let files = null;
+let filesCached = false;
+try {
+    files = JSON.parse(await fs.readFile(`${__dirname}/../assets/ads.json`));
+    filesCached = true;
+} catch (ex) {
+    files = await fs.readdir(`${__dirname}/../assets/ads`);
+}
+
+if (!filesCached)
+    await fs.writeFile(`${__dirname}/../assets/ads.json`, JSON.stringify(files));
+
 while (files.length) {
     const idx = Math.floor(Math.random() * files.length);
     const file = files[idx];
