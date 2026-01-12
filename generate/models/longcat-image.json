@@ -1,0 +1,10 @@
+{
+    "//custom_nodes": [
+        "https://github.com/Yahweasel/ComfyUI-HF-Diffusers.git",
+        "https://github.com/Chaoses-Ib/ComfyUI_Ib_CustomNodes.git"
+    ],
+    "output": "18",
+    "seed": "16",
+    "prompt": "16",
+    "negative": "19"
+}

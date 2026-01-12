@@ -25,10 +25,16 @@ const fs = require("fs/promises");
 
 const genImg = require("./generate-img.js");
 
-const models = require("./models.json");
+let models = require("./models.json");
 const numWords = 6;
+const numModels = 4;
 
 async function main(args) {
+    // Choose some models
+    models = models.filter(x => !x.startsWith("//"));
+    while (models.length > numModels)
+        models.splice(~~(Math.random() * models.length), 1);
+
     // Handle arguments
     let meta = null;
     let outFile = null;
@@ -175,22 +181,12 @@ async function main(args) {
         if (task.model !== lastTask.model || task.step !== lastTask.step) {
             // Finish the last step
             await allQueues();
-            if (task.model !== lastTask.model) {
-                // Clear the cache
-                await Promise.all(backends.map(async backend => {
-                    try {
-                        const f = await fetch(`${backend}/free`, {
-                            method: "POST",
-                            headers: {"content-type": "application/json"},
-                            body: JSON.stringify({
-                                unload_models: true,
-                                free_memory: true
-                            })
-                        });
-                        await f.text();
-                    } catch (ex) {}
-                }));
-            }
+            let clearCache = genImg.clearCache;
+            if (task.generator.clearCache)
+                clearCache = task.generator.clearCache;
+            await Promise.all(backends.map(backend => {
+                return genImg.clearCache(backend, task.step);
+            }));
         }
         lastTask = task;
 

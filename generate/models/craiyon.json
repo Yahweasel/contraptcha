@@ -1,0 +1,9 @@
+{
+    "//custom_nodes": [
+        "https://github.com/Yahweasel/ComfyUI-MinDalle.git"
+    ],
+    "output": "46",
+    "seed": "41",
+    "prompt": "41",
+    "negative": "43"
+}

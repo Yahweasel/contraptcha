@@ -31,32 +31,35 @@ async function generate(opts) {
 
     let out = "---";
     switch (step) {
-        case 0:
-            w[prompt.output[0]].inputs.filename = oname;
+        case 0: // rewrite and encode prompt
+            w[prompt.output[0][0]].inputs.filename = oname;
+            w[prompt.output[0][1]].inputs.filename = oname;
             w[prompt.seed[0]].inputs.seed = seed;
             genImg.setText(w[prompt.prompt], "@POSITIVE@", positive);
             out = `${oname}.ckpt`;
             break;
 
-        case 1:
+        case 1: // low-res gen
             w[prompt.input[0]].inputs.filename = `${oname}.ckpt`;
-            w[prompt.output[1]].inputs.filename_prefix = oname;
+            w[prompt.output[1][0]].inputs.filename_prefix = `${oname}v`;
+            w[prompt.output[1][1]].inputs.filename_prefix = `${oname}a`;
             w[prompt.seed[1]].inputs.noise_seed = seed;
+            out = `${oname}v_00001_.latent`;
+            break;
+
+        case 2: // high-res gen
+            w[prompt.input[1][0]].inputs.latent = `${oname}v_00001_.latent`;
+            w[prompt.input[1][1]].inputs.latent = `${oname}a_00001_.latent`;
+            w[prompt.input[1][2]].inputs.filename = `${oname}.ckpt`;
+            w[prompt.output[2]].inputs.filename_prefix = oname;
+            w[prompt.seed[2]].inputs.noise_seed = seed;
             out = `${oname}_00001_.latent`;
             break;
 
-        case 2:
-            w[prompt.input[1][0]].inputs.latent = `${oname}_00001_.latent`;
-            w[prompt.input[1][1]].inputs.filename = `${oname}.ckpt`;
-            w[prompt.output[2]].inputs.filename_prefix = oname;
-            w[prompt.seed[2]].inputs.noise_seed = seed;
-            out = `${oname}_00002_.latent`;
-            break;
-
-        default: // 3
-            w[prompt.input[2]].inputs.latent = `${oname}_00002_.latent`;
+        default: // 3, VAE decode
+            w[prompt.input[2]].inputs.latent = `${oname}_00001_.latent`;
             w[prompt.output[3]].inputs.filename_prefix = oname;
-            out = `${oname}_00003.mkv`;
+            out = `${oname}_00002.mkv`;
             break;
     }
 
@@ -96,14 +99,20 @@ async function generate(opts) {
     }
 
     if (step === 3) {
-        await fs.rename(`${oname}_00003.png`, `${oname}_00001_.png`);
-        await fs.rename(`${oname}_00003.mkv`, `${oname}_00001_.mkv`);
+        await fs.rename(`${oname}_00002.png`, `${oname}_00001_.png`);
+        await fs.rename(`${oname}_00002.mkv`, `${oname}_00001_.mkv`);
     }
 
     return true;
 }
 
+async function clearCache(backend, step) {
+    if (step !== 2) /* same model for low-res and high-res */
+        return genImg.clearCache(backend, 0);
+}
+
 module.exports = {
     steps: 4,
-    generate
+    generate,
+    clearCache
 };

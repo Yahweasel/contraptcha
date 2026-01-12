@@ -1,0 +1,66 @@
+{
+  "41": {
+    "inputs": {
+      "prompt": "@POSITIVE@",
+      "seed": 1,
+      "top_k": 256,
+      "supercondition_factor": 16,
+      "mega": true
+    },
+    "class_type": "MinDalleNode",
+    "_meta": {
+      "title": "MinDalle Image Generator"
+    }
+  },
+  "43": {
+    "inputs": {
+      "prompt": "@NEGATIVE",
+      "images": [
+        "41",
+        0
+      ]
+    },
+    "class_type": "PILToImage",
+    "_meta": {
+      "title": "PIL To Image"
+    }
+  },
+  "44": {
+    "inputs": {
+      "model_name": "4x-ESRGAN.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "Load Upscale Model"
+    }
+  },
+  "45": {
+    "inputs": {
+      "upscale_model": [
+        "44",
+        0
+      ],
+      "image": [
+        "43",
+        0
+      ]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "Upscale Image (using Model)"
+    }
+  },
+  "46": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "45",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}

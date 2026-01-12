@@ -1,0 +1,142 @@
+{
+  "49": {
+    "inputs": {
+      "ckpt_name": "OfficialStableDiffusion/sd_xl_base_1.0.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "Load Checkpoint"
+    }
+  },
+  "50": {
+    "inputs": {
+      "text": "@POSITIVE@",
+      "clip": [
+        "49",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "51": {
+    "inputs": {
+      "inputcount": 6,
+      "operation": "combine",
+      "Update inputs": null,
+      "conditioning_1": [
+        "50",
+        0
+      ],
+      "conditioning_2": [
+        "50",
+        0
+      ],
+      "conditioning_3": [
+        "50",
+        0
+      ],
+      "conditioning_4": [
+        "50",
+        0
+      ],
+      "conditioning_5": [
+        "50",
+        0
+      ],
+      "conditioning_6": [
+        "50",
+        0
+      ]
+    },
+    "class_type": "ConditioningMultiCombine",
+    "_meta": {
+      "title": "Conditioning Multi Combine"
+    }
+  },
+  "52": {
+    "inputs": {
+      "seed": 1,
+      "steps": 20,
+      "cfg": 7,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1,
+      "model": [
+        "49",
+        0
+      ],
+      "positive": [
+        "51",
+        0
+      ],
+      "negative": [
+        "53",
+        0
+      ],
+      "latent_image": [
+        "54",
+        0
+      ]
+    },
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    }
+  },
+  "53": {
+    "inputs": {
+      "text": "@NEGATIVE@",
+      "clip": [
+        "49",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "54": {
+    "inputs": {
+      "width": 1152,
+      "height": 896,
+      "batch_size": 1
+    },
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Empty Latent Image"
+    }
+  },
+  "55": {
+    "inputs": {
+      "samples": [
+        "52",
+        0
+      ],
+      "vae": [
+        "49",
+        2
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "56": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "55",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}

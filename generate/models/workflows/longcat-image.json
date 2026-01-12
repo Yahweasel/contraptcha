@@ -1,0 +1,79 @@
+{
+  "15": {
+    "inputs": {
+      "pipeline_class": "LongCatImagePipeline",
+      "model": "meituan-longcat/LongCat-Image",
+      "device": "default",
+      "enable_model_cpu_offload": false,
+      "dtype": "bitsandbytes_8bit",
+      "kwargs": ""
+    },
+    "class_type": "HFDLoadPipeline",
+    "_meta": {
+      "title": "HF Diffusers load pipeline"
+    }
+  },
+  "16": {
+    "inputs": {
+      "prompt": "@POSITIVE@",
+      "negative_prompt": "",
+      "width": 1152,
+      "height": 896,
+      "seed": 1,
+      "num_inference_steps": 20,
+      "output_type": "pil",
+      "kwargs": "{\"guidance_scale\": 4}",
+      "pipeline": [
+        "15",
+        0
+      ],
+      "negative_prompt_embeds": [
+        "19",
+        0
+      ]
+    },
+    "class_type": "HFDRunPipeline",
+    "_meta": {
+      "title": "HF Diffusers run pipeline"
+    }
+  },
+  "17": {
+    "inputs": {
+      "images": [
+        "16",
+        0
+      ]
+    },
+    "class_type": "PILToImage",
+    "_meta": {
+      "title": "PIL To Image"
+    }
+  },
+  "18": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "17",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  },
+  "19": {
+    "inputs": {
+      "prompt": "@NEGATIVE@",
+      "kwargs": "",
+      "pipeline": [
+        "15",
+        0
+      ]
+    },
+    "class_type": "HFDEncodePrompt",
+    "_meta": {
+      "title": "HF Diffusers encode prompt"
+    }
+  }
+}

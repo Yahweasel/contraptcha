@@ -51,6 +51,25 @@ async function sendPrompt(backend, prompt) {
 }
 
 /**
+ * Clear ComfyUI's cache.
+ */
+async function clearCache(backend, step) {
+    if (step > 0)
+        return;
+    try {
+        const f = await fetch(`${backend}/free`, {
+            method: "POST",
+            headers: {"content-type": "application/json"},
+            body: JSON.stringify({
+                unload_models: true,
+                free_memory: true
+            })
+        });
+        await f.text();
+    } catch (ex) {}
+}
+
+/**
  * Run this command.
  */
 function run(cmd) {
@@ -108,7 +127,7 @@ async function generate(opts) {
         backend, prompt
     } = opts;
 
-    const w = JSON.parse(await loadWorkflow(prompt.model));
+    const w = await loadWorkflow(prompt.model);
     w[prompt.output].inputs.filename_prefix = oname;
     w[prompt.seed].inputs.noise_seed =
         w[prompt.seed].inputs.seed = seed;
@@ -143,7 +162,7 @@ async function generate(opts) {
     for (let seedAdd = 1000000000; seedAdd < 16000000000; seedAdd += 1000000000) {
         w[prompt.seed].inputs.noise_seed =
             w[prompt.seed].inputs.seed = seedBase + seedAdd;
-        if (!await sendPrompt(backend, prompt.workflow))
+        if (!await sendPrompt(backend, w))
             return false;
 
         // Still NSFW?
@@ -172,6 +191,7 @@ async function generate(opts) {
 module.exports = {
     steps: 1,
     sendPrompt,
+    clearCache,
     run,
     setText,
     loadWorkflow,

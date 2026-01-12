@@ -31,14 +31,14 @@ async function generate(opts) {
     const ext = (step === 2) ? ".mkv" : "_.latent";
     const suffix = `_0000${step+1}${ext}`;
     switch (step) {
-        case 0:
+        case 0: // high noise model
             w[prompt.output[0]].inputs.filename_prefix = oname;
             w[prompt.seed[0]].inputs.noise_seed = seed;
             genImg.setText(w[prompt.prompt[0]], "@POSITIVE@", positive);
             genImg.setText(w[prompt.negative[0]], "@NEGATIVE@", negative);
             break;
 
-        case 1:
+        case 1: // low noise model
             w[prompt.input[0]].inputs.latent = `${oname}_00001_.latent`;
             w[prompt.output[1]].inputs.filename_prefix = oname;
             w[prompt.seed[1]].inputs.noise_seed = seed;
@@ -46,7 +46,7 @@ async function generate(opts) {
             genImg.setText(w[prompt.negative[1]], "@NEGATIVE@", negative);
             break;
 
-        default: // 2
+        default: // 2, VAE decode
             w[prompt.input[1]].inputs.latent = `${oname}_00002_.latent`;
             w[prompt.output[2]].inputs.filename_prefix = oname;
     }
@@ -71,7 +71,12 @@ async function generate(opts) {
     return true;
 }
 
+function clearCache(backend, _) {
+    return genImg.clearCache(backend, 0);
+}
+
 module.exports = {
     steps: 3,
-    generate
+    generate,
+    clearCache
 };

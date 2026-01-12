@@ -31,7 +31,7 @@
   },
   "4": {
     "inputs": {
-      "noise_seed": 420
+      "noise_seed": 1
     },
     "class_type": "RandomNoise",
     "_meta": {
@@ -45,7 +45,7 @@
         0
       ],
       "audio_latent": [
-        "12",
+        "18",
         0
       ]
     },
@@ -125,7 +125,7 @@
   },
   "9": {
     "inputs": {
-      "latent": "ComfyUI_00001_.latent"
+      "latent": "ComfyUI_v_00001_.latent"
     },
     "class_type": "LoadLatent",
     "_meta": {
@@ -148,30 +148,6 @@
     "class_type": "CheckpointLoaderSimple",
     "_meta": {
       "title": "Load Checkpoint"
-    }
-  },
-  "12": {
-    "inputs": {
-      "frames_number": 121,
-      "frame_rate": 24,
-      "batch_size": 1,
-      "audio_vae": [
-        "13",
-        0
-      ]
-    },
-    "class_type": "LTXVEmptyLatentAudio",
-    "_meta": {
-      "title": "LTXV Empty Latent Audio"
-    }
-  },
-  "13": {
-    "inputs": {
-      "ckpt_name": "video/ltx/ltx-2-19b-dev-fp4.safetensors"
-    },
-    "class_type": "LTXVAudioVAELoader",
-    "_meta": {
-      "title": "LTXV Audio VAE Loader"
     }
   },
   "14": {
@@ -220,6 +196,15 @@
     "class_type": "SaveLatent",
     "_meta": {
       "title": "SaveLatent"
+    }
+  },
+  "18": {
+    "inputs": {
+      "latent": "ComfyUI_a_00001_.latent"
+    },
+    "class_type": "LoadLatent",
+    "_meta": {
+      "title": "LoadLatent"
     }
   }
 }

@@ -31,7 +31,7 @@ async function generate(opts) {
     const ext = (step === 3) ? "png" : "latent";
     const suffix = `_0000${step+1}_.` + ext;
     switch (step) {
-        case 0:
+        case 0: // unrefined generate
             w[prompt.output[0]].inputs.filename_prefix = oname;
             w[prompt.seed[0]].inputs.noise_seed =
                 w[prompt.seed[0]].inputs.seed = seed;
@@ -39,12 +39,12 @@ async function generate(opts) {
             genImg.setText(w[prompt.negative[0]], "@NEGATIVE@", negative);
             break;
 
-        case 1:
+        case 1: // VAE-to-VAE
             w[prompt.input[0]].inputs.latent = `${oname}_00001_.latent`;
             w[prompt.output[1]].inputs.filename_prefix = oname;
             break;
 
-        case 2:
+        case 2: // refine
             w[prompt.input[1]].inputs.latent = `${oname}_00002_.latent`;
             w[prompt.output[2]].inputs.filename_prefix = oname;
             w[prompt.seed[1]].inputs.noise_seed =
@@ -53,7 +53,7 @@ async function generate(opts) {
             genImg.setText(w[prompt.negative[1]], "@NEGATIVE@", negative);
             break;
 
-        default: // 3
+        default: // 3, VAE decode
             w[prompt.input[2]].inputs.latent = `${oname}_00003_.latent`;
             w[prompt.output[3]].inputs.filename_prefix = oname;
             break;
@@ -96,7 +96,12 @@ async function generate(opts) {
     return true;
 }
 
+function clearCache(backend, _) {
+    return genImg.clearCache(backend, 0);
+}
+
 module.exports = {
     steps: 4,
-    generate
+    generate,
+    clearCache
 };

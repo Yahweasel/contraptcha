@@ -27,7 +27,7 @@ declare let YALAP: any;
 
     const imageCt = 4;
     const wordCt = 6;
-    const videoModels = {"wan-2.2": 1};
+    const videoModels = {"wan-2.2": 1, "ltx-2": 1};
 
     // Get all our references
     const mainBox = gebi("main");
@@ -284,7 +284,7 @@ declare let YALAP: any;
         // Or, just choose a random (unbeaten) seed
         if (seed < 0) {
             const dailySeeds = await getDailySeeds();
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2w");
+            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2x");
             const seeds = dailySeeds.concat(randomSeeds);
             do {
                 if (!seeds.length)
@@ -1074,22 +1074,25 @@ declare let YALAP: any;
             if (i === credits.length - 1)
                 html += "and ";
             switch (cr) {
+                case "z-image-turbo":
+                    html += '<a href="https://huggingface.co/Tongyi-MAI/Z-Image-Turbo">Z-Image Turbo</a>';
+                    break;
+                case "longcat-image":
+                    html += '<a href="https://huggingface.co/meituan-longcat/LongCat-Image">LongCat Image</a>';
+                    break;
                 case "hunyuan-image-2.1":
                     html += '<a href="https://huggingface.co/tencent/HunyuanImage-2.1">HunyuanImage 2.1</a>';
                     break;
-
+                case "qwen-image-2512":
                 case "qwen-image":
                     html += '<a href="https://huggingface.co/Qwen/Qwen-Image">Qwen-Image</a> with <a href="https://huggingface.co/lightx2v/Qwen-Image-Lightning">Qwen-Image-Lightning</a>';
                     break;
-
                 case "wan-2.2":
                     html += '<a href="https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B">Wan2.2</a> with <a href="https://huggingface.co/lightx2v/Wan2.2-Lightning">Wan2.2-Lightning</a>';
                     break;
-
                 case "infinity-8b":
                     html += '<a href="https://huggingface.co/FoundationVision/Infinity">Infinity 8B-512x512</a>';
                     break;
-
                 case "hidream-i1-fast":
                     html += '<a href="https://huggingface.co/HiDream-ai/HiDream-I1-Fast">HiDream-I1 Fast</a>';
                     break;
@@ -1125,6 +1128,17 @@ declare let YALAP: any;
                     break;
                 case "sdxl":
                     html += '<a href="https://stability.ai/stable-image">Stable Diffusion XL</a>';
+                    break;
+
+                // Hard mode
+                case "ltx-2":
+                    html += '<a href="https://huggingface.co/Lightricks/LTX-2">LTX-2 distilled</a>';
+                    break;
+                case "sdxl-combine-conditioning":
+                    html += '<a href="https://stability.ai/stable-image">SDXL</a> with combined conditioning';
+                    break;
+                case "craiyon":
+                    html += '<a href="https://huggingface.co/dalle-mini/dalle-mini">CrAIyon v1/DALL·E Mini Mega</a>';
                     break;
                 case "pe-bad-medieval-art":
                     html += '<a href="https://stability.ai/stable-image">SDXL</a> with <a href="https://civitai.com/models/129604?modelVersionId=142084">PE Shitty Medieval Paintings</a>';

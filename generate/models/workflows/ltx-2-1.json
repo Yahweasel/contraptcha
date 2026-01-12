@@ -111,23 +111,11 @@
   },
   "8": {
     "inputs": {
-      "noise_seed": 45
+      "noise_seed": 1
     },
     "class_type": "RandomNoise",
     "_meta": {
       "title": "RandomNoise"
-    }
-  },
-  "9": {
-    "inputs": {
-      "av_latent": [
-        "5",
-        0
-      ]
-    },
-    "class_type": "LTXVSeparateAVLatent",
-    "_meta": {
-      "title": "LTXVSeparateAVLatent"
     }
   },
   "10": {
@@ -155,9 +143,9 @@
   },
   "13": {
     "inputs": {
-      "filename_prefix": "latents/ComfyUI",
+      "filename_prefix": "latents/ComfyUI_v",
       "samples": [
-        "9",
+        "17",
         0
       ]
     },
@@ -194,6 +182,31 @@
     "class_type": "LTXVAudioVAELoader",
     "_meta": {
       "title": "LTXV Audio VAE Loader"
+    }
+  },
+  "17": {
+    "inputs": {
+      "av_latent": [
+        "5",
+        1
+      ]
+    },
+    "class_type": "LTXVSeparateAVLatent",
+    "_meta": {
+      "title": "LTXVSeparateAVLatent"
+    }
+  },
+  "18": {
+    "inputs": {
+      "filename_prefix": "latents/ComfyUI_a",
+      "samples": [
+        "17",
+        1
+      ]
+    },
+    "class_type": "SaveLatent",
+    "_meta": {
+      "title": "SaveLatent"
     }
   }
 }

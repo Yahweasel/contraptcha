@@ -1,5 +1,6 @@
 #!/bin/sh
 rm -f STOP
+ln -sf models-standard.json models.json
 ct=1
 while [ ! -e STOP ]
 do

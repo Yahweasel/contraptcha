@@ -1,0 +1,11 @@
+{
+    "//custom_nodes": [
+        "https://github.com/kijai/ComfyUI-KJNodes.git"
+    ],
+    "generator": "combine-conditioning",
+    "output": "56",
+    "seed": "52",
+    "prompt": "50",
+    "negative": "53",
+    "combine": "51"
+}
