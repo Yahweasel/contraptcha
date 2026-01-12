@@ -185,7 +185,7 @@ async function main(args) {
             if (task.generator.clearCache)
                 clearCache = task.generator.clearCache;
             await Promise.all(backends.map(backend => {
-                return genImg.clearCache(backend, task.step);
+                return clearCache(backend, task.step);
             }));
         }
         lastTask = task;

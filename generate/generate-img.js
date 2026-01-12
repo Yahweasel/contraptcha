@@ -53,9 +53,7 @@ async function sendPrompt(backend, prompt) {
 /**
  * Clear ComfyUI's cache.
  */
-async function clearCache(backend, step) {
-    if (step > 0)
-        return;
+async function clearCache(backend, _ /* step */) {
     try {
         const f = await fetch(`${backend}/free`, {
             method: "POST",

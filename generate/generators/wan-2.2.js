@@ -71,12 +71,7 @@ async function generate(opts) {
     return true;
 }
 
-function clearCache(backend, _) {
-    return genImg.clearCache(backend, 0);
-}
-
 module.exports = {
     steps: 3,
-    generate,
-    clearCache
+    generate
 };
