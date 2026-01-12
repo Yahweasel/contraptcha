@@ -4,7 +4,6 @@
     "hunyuan-image-2.1",
     "longcat-image",
     "//qwen-image",
-    "wan-2.2",
     "infinity-8b",
     "hidream-i1-fast",
     "lumina-2",
@@ -16,5 +15,8 @@
     "juggernautxl11",
     "//--realvisxl3.0turbo",
     "//--dreamshaperxlsfwturbo",
-    "sdxl"
+    "sdxl",
+
+    "ltx-2",
+    "wan-2.2"
 ]
