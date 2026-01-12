@@ -24,7 +24,7 @@ async function generate(opts) {
         backend, prompt
     } = opts;
 
-    const w = JSON.parse(JSON.stringify(prompt.workflow));
+    const w = await genImg.loadWorkflow(prompt.model);
     w[prompt.output].inputs.filename_prefix = oname;
     w[prompt.seed].inputs.seed = seed;
     genImg.setText(w[prompt.prompt], "@POSITIVE@", positive);

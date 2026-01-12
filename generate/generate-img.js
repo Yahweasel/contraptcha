@@ -78,6 +78,27 @@ function setText(obj, from, to) {
     }
 }
 
+const workflowCache = Object.create(null);
+
+/**
+ * Load the workflow file for this model.
+ */
+async function loadWorkflow(model) {
+    if (!workflowCache[model])
+        workflowCache[model] = await fs.readFile(`models/workflows/${model}.json`, "utf8");
+    return JSON.parse(workflowCache[model]);
+}
+
+/**
+ * Load a sequence of workflows for this model.
+ */
+async function loadWorkflows(model, ct) {
+    const ret = [];
+    for (let i = 0; i < ct; i++)
+        ret.push(await loadWorkflow(`${model}-${i}`));
+    return ret;
+}
+
 /**
  * Generate an image with this prompt.
  */
@@ -87,9 +108,10 @@ async function generate(opts) {
         backend, prompt
     } = opts;
 
-    const w = JSON.parse(JSON.stringify(prompt.workflow));
+    const w = JSON.parse(await loadWorkflow(prompt.model));
     w[prompt.output].inputs.filename_prefix = oname;
-    w[prompt.seed].inputs.noise_seed = seed;
+    w[prompt.seed].inputs.noise_seed =
+        w[prompt.seed].inputs.seed = seed;
     setText(w[prompt.prompt], "@POSITIVE@", positive);
     setText(w[prompt.negative], "@NEGATIVE@", negative);
 
@@ -119,7 +141,8 @@ async function generate(opts) {
     // OK, try more seeds
     const seedBase = w[prompt.seed].inputs.noise_seed;
     for (let seedAdd = 1000000000; seedAdd < 16000000000; seedAdd += 1000000000) {
-        w[prompt.seed].inputs.noise_seed = seedBase + seedAdd;
+        w[prompt.seed].inputs.noise_seed =
+            w[prompt.seed].inputs.seed = seedBase + seedAdd;
         if (!await sendPrompt(backend, prompt.workflow))
             return false;
 
@@ -151,5 +174,7 @@ module.exports = {
     sendPrompt,
     run,
     setText,
+    loadWorkflow,
+    loadWorkflows,
     generate
 };

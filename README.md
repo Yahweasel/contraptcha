@@ -36,12 +36,12 @@ tested it with ComfyUI in turn installed through
 [StableSwarmUI](https://github.com/Stability-AI/StableSwarmUI). You should have
 StableSwarmUI up and running before attempting to do anything else.
 
-In the `output` directory of ComfyUI, `out` should be symlinked to a (new)
-`generate/out` directory here. All necessary models (see the header of
-`generate-img.js` for the list of used models) should be installed. Then, just
-run `generate.js` which the list of words to generate as arguments. You can look
-at `generate.sh` to see how the wordlists are selected for the site (it's not
-complicated).
+In the `output`, `input`, and `models/conditions` directories of ComfyUI, `out`
+should be symlinked to a (new) `generate/out` directory here. All necessary
+models and ComfyUI nodes (see the `models` directory for supported models)
+should be installed. Then, just run `generate.js` which the list of words to
+generate as arguments. You can look at `generate.sh` to see how the wordlists
+are selected for the site (it's not complicated).
 
 Each puzzle is given a random seed, and that random seed is both used as an
 identifier for the puzzle and used as the actual random seed for AI image

@@ -1,0 +1,68 @@
+{
+  "11": {
+    "inputs": {
+      "text": "@POSITIVE@",
+      "clip": [
+        "13",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Enhanced Prompt (Positive)"
+    }
+  },
+  "12": {
+    "inputs": {
+      "frame_rate": 24,
+      "positive": [
+        "11",
+        0
+      ],
+      "negative": [
+        "14",
+        0
+      ]
+    },
+    "class_type": "LTXVConditioning",
+    "_meta": {
+      "title": "LTXVConditioning"
+    }
+  },
+  "13": {
+    "inputs": {
+      "gemma_path": "gemma-3-12b-it-qat-q4_0-unquantized/model-00001-of-00005.safetensors",
+      "ltxv_path": "video/ltx/ltx-2-19b-dev-fp4.safetensors",
+      "max_length": 1024
+    },
+    "class_type": "LTXVGemmaCLIPModelLoader",
+    "_meta": {
+      "title": "🅛🅣🅧 Gemma 3 Model Loader"
+    }
+  },
+  "14": {
+    "inputs": {
+      "conditioning": [
+        "11",
+        0
+      ]
+    },
+    "class_type": "ConditioningZeroOut",
+    "_meta": {
+      "title": "ConditioningZeroOut"
+    }
+  },
+  "15": {
+    "inputs": {
+      "filename": "condition_tensor",
+      "condition": [
+        "12",
+        0
+      ]
+    },
+    "class_type": "SaveCondition",
+    "_meta": {
+      "title": "Save Condition"
+    }
+  }
+}

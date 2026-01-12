@@ -86,6 +86,7 @@ async function main(args) {
     for (let si = 0; si < models.length; si++) {
         const model = models[si];
         const prompt = JSON.parse(await fs.readFile(`models/${model}.json`, "utf8"));
+        prompt.model = model;
         let generator = genImg;
         if (prompt.generator)
             generator = require(`./generators/${prompt.generator}.js`);

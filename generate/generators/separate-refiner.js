@@ -27,13 +27,14 @@ async function generate(opts) {
         backend, step, prompt
     } = opts;
 
-    const w = JSON.parse(JSON.stringify(prompt.workflow[step]));
+    const w = await genImg.loadWorkflow(`${prompt.model}-${step}`);
     const ext = (step === 3) ? "png" : "latent";
     const suffix = `_0000${step+1}_.` + ext;
     switch (step) {
         case 0:
             w[prompt.output[0]].inputs.filename_prefix = oname;
-            w[prompt.seed[0]].inputs.noise_seed = seed;
+            w[prompt.seed[0]].inputs.noise_seed =
+                w[prompt.seed[0]].inputs.seed = seed;
             genImg.setText(w[prompt.prompt[0]], "@POSITIVE@", positive);
             genImg.setText(w[prompt.negative[0]], "@NEGATIVE@", negative);
             break;
@@ -46,7 +47,8 @@ async function generate(opts) {
         case 2:
             w[prompt.input[1]].inputs.latent = `${oname}_00002_.latent`;
             w[prompt.output[2]].inputs.filename_prefix = oname;
-            w[prompt.seed[1]].inputs.noise_seed = seed;
+            w[prompt.seed[1]].inputs.noise_seed =
+                w[prompt.seed[1]].inputs.seed = seed;
             genImg.setText(w[prompt.prompt[1]], "@POSITIVE@", positive);
             genImg.setText(w[prompt.negative[1]], "@NEGATIVE@", negative);
             break;

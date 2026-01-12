@@ -27,7 +27,7 @@ async function generate(opts) {
         backend, step, prompt
     } = opts;
 
-    const w = JSON.parse(JSON.stringify(prompt.workflow[step]));
+    const w = await genImg.loadWorkflow(`${prompt.model}-${step}`);
     const ext = (step === 2) ? ".mkv" : "_.latent";
     const suffix = `_0000${step+1}${ext}`;
     switch (step) {

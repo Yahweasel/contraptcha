@@ -1,0 +1,12 @@
+{
+    "//custom_nodes": [
+        "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git",
+        "https://github.com/Lightricks/ComfyUI-LTXVideo.git",
+        "https://github.com/lrzjason/Comfyui-Condition-Utils.git"
+    ],
+    "generator": "ltx-2",
+    "input": ["14", ["9", "15"], "3"],
+    "output": ["15", "13", "17", "4"],
+    "seed": ["11", "8", "4"],
+    "prompt": "11"
+}
