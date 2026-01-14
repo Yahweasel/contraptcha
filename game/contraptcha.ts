@@ -1080,6 +1080,9 @@ declare let YALAP: any;
                 case "longcat-image":
                     html += '<a href="https://huggingface.co/meituan-longcat/LongCat-Image">LongCat Image</a>';
                     break;
+                case "ltx-2":
+                    html += '<a href="https://huggingface.co/Lightricks/LTX-2">LTX-2 distilled</a>';
+                    break;
                 case "hunyuan-image-2.1":
                     html += '<a href="https://huggingface.co/tencent/HunyuanImage-2.1">HunyuanImage 2.1</a>';
                     break;
@@ -1131,8 +1134,8 @@ declare let YALAP: any;
                     break;
 
                 // Hard mode
-                case "ltx-2":
-                    html += '<a href="https://huggingface.co/Lightricks/LTX-2">LTX-2 distilled</a>';
+                case "z-image-turbo-combine-conditioning":
+                    html += '<a href="https://huggingface.co/Tongyi-MAI/Z-Image-Turbo">Z-Image Turbo</a> with combined conditioning';
                     break;
                 case "sdxl-combine-conditioning":
                     html += '<a href="https://stability.ai/stable-image">SDXL</a> with combined conditioning';

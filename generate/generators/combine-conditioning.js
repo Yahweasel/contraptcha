@@ -14,6 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+const fs = require("fs/promises");
+
 const genImg = require("../generate-img.js");
 
 /**
