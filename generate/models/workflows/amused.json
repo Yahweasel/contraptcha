@@ -1,0 +1,86 @@
+{
+  "1": {
+    "inputs": {
+      "pipeline_class": "AmusedPipeline",
+      "model": "amused/amused-512",
+      "device": "default",
+      "enable_model_cpu_offload": false,
+      "dtype": "default",
+      "kwargs": ""
+    },
+    "class_type": "HFDLoadPipeline",
+    "_meta": {
+      "title": "HF Diffusers load pipeline"
+    }
+  },
+  "2": {
+    "inputs": {
+      "prompt": "@POSITIVE@",
+      "negative_prompt": "",
+      "width": 0,
+      "height": 0,
+      "seed": 1,
+      "num_inference_steps": 0,
+      "output_type": "pil",
+      "kwargs": "",
+      "pipeline": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "HFDRunPipeline",
+    "_meta": {
+      "title": "HF Diffusers run pipeline"
+    }
+  },
+  "3": {
+    "inputs": {
+      "model_name": "002_lightweightSR_DIV2K_s64w8_SwinIR-S_x2.pth"
+    },
+    "class_type": "UpscaleModelLoader",
+    "_meta": {
+      "title": "Load Upscale Model"
+    }
+  },
+  "4": {
+    "inputs": {
+      "images": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "PILToImage",
+    "_meta": {
+      "title": "PIL To Image"
+    }
+  },
+  "5": {
+    "inputs": {
+      "upscale_model": [
+        "3",
+        0
+      ],
+      "image": [
+        "4",
+        0
+      ]
+    },
+    "class_type": "ImageUpscaleWithModel",
+    "_meta": {
+      "title": "Upscale Image (using Model)"
+    }
+  },
+  "6": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "5",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}
