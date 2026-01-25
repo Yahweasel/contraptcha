@@ -161,11 +161,16 @@ async function main(args) {
             await allQueues();
         if (!tasks.length)
             break;
+        const task = tasks.shift();
 
         // Check the backends
         try {
             const newBackendsStr = await fs.readFile("backends.json", "utf8");
-            if (newBackendsStr !== backendsStr) {
+            if (
+                newBackendsStr !== backendsStr ||
+                task.model !== lastTask.model ||
+                task.step !== lastTask.step
+            ) {
                 const newBackends = JSON.parse(newBackendsStr);
                 await allQueues();
                 backendsStr = newBackendsStr;
@@ -176,8 +181,7 @@ async function main(args) {
             console.error(ex);
         }
 
-        // Choose a task
-        const task = tasks.shift();
+        // Clear caches on task change
         if (task.model !== lastTask.model || task.step !== lastTask.step) {
             // Finish the last step
             await allQueues();
