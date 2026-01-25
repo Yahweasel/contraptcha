@@ -239,6 +239,7 @@ declare let YALAP: any;
         ignoreURL?: boolean;
         daily?: boolean;
         setSeed?: number;
+        hard?: boolean;
     }
 
     /**
@@ -283,9 +284,15 @@ declare let YALAP: any;
 
         // Or, just choose a random (unbeaten) seed
         if (seed < 0) {
-            const dailySeeds = await getDailySeeds();
-            const randomSeeds: number[] = await loadJSON("assets/seeds.json?v=2x");
-            const seeds = dailySeeds.concat(randomSeeds);
+            let seeds: number[];
+            if (!opts.hard) {
+                const dailySeeds = await getDailySeeds();
+                const randomSeeds =
+                    await loadJSON("assets/seeds.json?v=2x");
+                seeds = dailySeeds.concat(randomSeeds);
+            } else {
+                seeds = await loadJSON("assets/hard-seeds.json");
+            }
             do {
                 if (!seeds.length)
                     break;
@@ -1284,6 +1291,8 @@ declare let YALAP: any;
                     return dailiesPanel();
                 else if (cmd === "newgame" || cmd === "new")
                     return newGame({ignoreURL: true});
+                else if (cmd === "hardgame" || cmd === "hard")
+                    return newGame({ignoreURL: true, hard: true});
                 else if (cmd === "stats")
                     return stats();
                 else if (cmd === "copy")
