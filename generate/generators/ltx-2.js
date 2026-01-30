@@ -69,6 +69,12 @@ async function generate(opts) {
         await fs.access(out, fs.constants.F_OK);
         exists = true;
     } catch (ex) {}
+    if (step === 3) {
+        try {
+            await fs.access(`${oname}_00001_.mkv`, fs.constants.F_OK);
+            return true;
+        } catch (ex) {}
+    }
 
     if (!exists) {
         if (step === 0) {

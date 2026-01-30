@@ -25,16 +25,11 @@ const fs = require("fs/promises");
 
 const genImg = require("./generate-img.js");
 
-let models = require("./models.json");
+const allModels = require("./models.json");
 const numWords = 6;
 const numModels = 4;
 
 async function main(args) {
-    // Choose some models
-    models = models.filter(x => !x.startsWith("//"));
-    while (models.length > numModels)
-        models.splice(~~(Math.random() * models.length), 1);
-
     // Handle arguments
     let meta = null;
     let outFile = null;
@@ -60,11 +55,6 @@ async function main(args) {
         }
     }
 
-    if (words.length !== numWords) {
-        console.error(`Use: ./generate.js [-m metadata] <${numWords} words>`);
-        process.exit(1);
-    }
-
     // Choose an unused seed
     if (seed < 0) {
         do {
@@ -79,6 +69,28 @@ async function main(args) {
     try {
         await fs.mkdir(`out/${seed}`);
     } catch (ex) {}
+
+    // Read or write the words
+    try {
+        words = JSON.parse(await fs.readFile(`out/${seed}/${seed}.json`, "utf8"));
+    } catch (ex) {}
+    if (words.length !== numWords) {
+        console.error(`Use: ./generate.js [-m metadata] <${numWords} words>`);
+        process.exit(1);
+    }
+
+    // Choose the models
+    let models = null;
+    try {
+        models = JSON.parse(await fs.readFile(`out/${seed}/cr.json`, "utf8"));
+    } catch (ex) {}
+    if (models === null) {
+        models = allModels.filter(x => !x.startsWith("//"));
+        while (models.length > numModels)
+            models.splice(~~(Math.random() * models.length), 1);
+    }
+
+    // Set up the directory
     await fs.writeFile(`out/${seed}/${seed}.json`, JSON.stringify(words));
     await fs.writeFile(`out/${seed}/cr.json`, JSON.stringify(models));
     if (meta)

@@ -20,7 +20,7 @@ Generate (AI imagery) → NSFW detection/removal → OCR → censor text →
 ```
 
 The generation of imagery, NSFW detection, and OCR are ML tasks, and thus have
-the most complexity. The entire process can be driven by the `generate.sh`
+the most complexity. The entire process can be driven by the `generate-loop.js`
 script in the `generate` directory (note: not the `generate.js` script, which
 just generates images).
 
@@ -40,8 +40,8 @@ In the `output`, `input`, and `models/conditions` directories of ComfyUI, `out`
 should be symlinked to a (new) `generate/out` directory here. All necessary
 models and ComfyUI nodes (see the `models` directory for supported models)
 should be installed. Then, just run `generate.js` which the list of words to
-generate as arguments. You can look at `generate.sh` to see how the wordlists
-are selected for the site (it's not complicated).
+generate as arguments. You can look at `generate-loop.js` to see how the
+wordlists are selected for the site (it's not complicated).
 
 Each puzzle is given a random seed, and that random seed is both used as an
 identifier for the puzzle and used as the actual random seed for AI image

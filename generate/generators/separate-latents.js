@@ -47,6 +47,12 @@ async function generate(opts) {
         await fs.access(`${oname}${suffix}`, fs.constants.F_OK);
         exists = true;
     } catch (ex) {}
+    if (step === 1) {
+        try {
+            await fs.access(`${oname}_00001_.png`, fs.constants.F_OK);
+            return true;
+        } catch (ex) {}
+    }
 
     if (!exists) {
         if (!await genImg.sendPrompt(backend, w))

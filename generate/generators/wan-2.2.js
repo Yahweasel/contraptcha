@@ -57,6 +57,12 @@ async function generate(opts) {
         await fs.access(`${oname}${suffix}`, fs.constants.F_OK);
         exists = true;
     } catch (ex) {}
+    if (step === 2) {
+        try {
+            await fs.access(`${oname}_00001_.mkv`, fs.constants.F_OK);
+            return true;
+        } catch (ex) {}
+    }
 
     if (!exists) {
         if (!await genImg.sendPrompt(backend, w))
