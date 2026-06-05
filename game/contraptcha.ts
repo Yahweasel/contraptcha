@@ -291,7 +291,7 @@ declare let YALAP: any;
                     await loadJSON("assets/seeds.json?v=2x");
                 seeds = dailySeeds.concat(randomSeeds);
             } else {
-                seeds = await loadJSON("assets/hard-seeds.json");
+                seeds = await loadJSON("assets/hard-seeds.json?v=2");
             }
             do {
                 if (!seeds.length)
@@ -1081,6 +1081,9 @@ declare let YALAP: any;
             if (i === credits.length - 1)
                 html += "and ";
             switch (cr) {
+                case "flux2klein":
+                    html += '<a href="https://huggingface.co/black-forest-labs/FLUX.2-klein-4B">FLUX.2 Klein 4B</a>';
+                    break;
                 case "z-image-turbo":
                     html += '<a href="https://huggingface.co/Tongyi-MAI/Z-Image-Turbo">Z-Image Turbo</a>';
                     break;
@@ -1146,6 +1149,9 @@ declare let YALAP: any;
                     break;
                 case "sdxl-combine-conditioning":
                     html += '<a href="https://stability.ai/stable-image">SDXL</a> with combined conditioning';
+                    break;
+                case "qwen3-svg":
+                    html += '<a href="https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507">Qwen3</a> generating SVG drawings';
                     break;
                 case "craiyon":
                     html += '<a href="https://huggingface.co/dalle-mini/dalle-mini">CrAIyon v1/DALL·E Mini Mega</a>';
