@@ -1,0 +1,123 @@
+# IMAGE MODELS
+
+mage-flow
+	2026-07-24(ish, this is the Comfy files)
+	https://docs.comfy.org/tutorials/image/mage-flow/mage-flow
+	https://huggingface.co/Comfy-Org/Mage-Flow
+boogu
+	2026-06-16
+	https://docs.comfy.org/tutorials/image/boogu/boogu-image-0.1
+	https://huggingface.co/Boogu/Boogu-Image-0.1-Turbo
+omnigen2
+	2026-06-06
+	https://docs.comfy.org/tutorials/image/omnigen/omnigen2
+	https://huggingface.co/OmniGen2/OmniGen2
+microsoft-lens-turbo
+	2026-05-23(ish, this is the Comfy files)
+	https://docs.comfy.org/tutorials/image/lens/lens
+	https://huggingface.co/Comfy-Org/Lens
+hidream-o1-dev
+	2026-05-08
+	https://docs.comfy.org/tutorials/image/hidream/hidream-o1
+	https://huggingface.co/HiDream-ai/HiDream-O1-Image-Dev
+ernie-image-turbo
+	2026-04-02
+	https://huggingface.co/baidu/ERNIE-Image-Turbo
+flux2klein
+	2026-01-15
+	https://docs.comfy.org/tutorials/flux/flux-2-klein
+	https://huggingface.co/black-forest-labs/FLUX.2-klein-4B
+qwen-image-2512
+	2025-12-29
+	https://docs.comfy.org/tutorials/image/qwen/qwen-image-2512
+	https://huggingface.co/Qwen/Qwen-Image-2512
+longcat-image
+	2025-12-04
+	https://huggingface.co/meituan-longcat/LongCat-Image
+ovis-image
+	2025-11-28
+	https://huggingface.co/ATH-MaaS/Ovis-Image-7B
+	https://docs.comfy.org/tutorials/image/ovis/ovis-image
+z-image-turbo
+	2025-11-25
+	https://docs.comfy.org/tutorials/image/z-image/z-image-turbo
+	https://huggingface.co/Tongyi-MAI/Z-Image-Turbo
+lumina-2
+	2025-01-22
+	https://github.com/mcmonkeyprojects/SwarmUI/blob/master/docs/Model%20Support.md#lumina-2
+	https://huggingface.co/Alpha-VLLM/Lumina-Image-2.0
+shuttle-jaguar
+	2025-01-21
+	https://civitai.com/models/1167909/shuttle-jaguar
+juggernautxl11
+	2024-08-29
+	https://civitai.com/models/133005/juggernaut-xl?modelVersionId=782002
+auraflow-0.3
+	2024-08-14
+	https://github.com/mcmonkeyprojects/SwarmUI/blob/master/docs/Obscure%20Model%20Support.md#auraflow
+	https://huggingface.co/fal/AuraFlow-v0.3
+sdxl
+	2023-07-??
+
+## OBSOLETE
+
+hidream-i1-fast
+	2025-04-06
+	OBSOLETE (see hidream-o1-dev)
+	https://docs.comfy.org/tutorials/image/hidream/hidream-i1
+	https://huggingface.co/HiDream-ai/HiDream-I1-Fast
+qwen-image
+	OBSOLETE (see qwen-image-2512)
+infinity-8b
+	REMOVED (just too awful, removed)
+shuttle3
+	OBSOLETE (see shuttle-jaguar)
+pixelwave3schnell
+	REMOVED (too related to other models)
+flux1schnell
+	OBSOLETE (see flux2klein)
+realvisxl3.0turbo
+	REMOVED (too related to other models)
+dreamshaperxlsfwturbo
+	REMOVED (too similar to other models)
+
+
+# VIDEO MODELS
+ltx-2.5
+	2026-08-11
+	https://huggingface.co/Lightricks/LTX-2.5
+wan-2.2
+	2025-07-24
+	https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B
+
+## OBSOLETE
+
+ltx2
+	OBSOLETE (see ltx2.5)
+
+
+# HARD MODE
+
+z-image-turbo-combine-conditioning
+	2025-11-25
+qwen3-svg
+	2025-07-28
+	https://huggingface.co/Qwen/Qwen3-30B-A3B-Instruct-2507
+	https://huggingface.co/unsloth/Qwen3-30B-A3B-Instruct-2507-GGUF
+amused
+	2023-12-20
+	https://huggingface.co/amused/amused-512
+sdxl-mspaint-portrait
+	2023-10-30
+	https://civitai.com/models/183354/sdxl-ms-paint-portraits
+pe-bad-medieval-art
+	2023-09-05
+	https://civitai.com/models/129604/pe-shitty-medieval-paintings
+sdxl-combine-conditioning, sdxl-loves-trains
+	2023-07-??
+nikolai-doodle
+	2023-06-15
+	https://civitai.com/models/90558/child-type-doodles?modelVersionId=96482
+craiyon
+	2022-06-28
+	https://huggingface.co/dalle-mini/dalle-mega

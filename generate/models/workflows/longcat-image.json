@@ -1,79 +1,139 @@
 {
-  "15": {
+  "4": {
     "inputs": {
-      "pipeline_class": "LongCatImagePipeline",
-      "model": "meituan-longcat/LongCat-Image",
-      "device": "default",
-      "enable_model_cpu_offload": false,
-      "dtype": "bitsandbytes_8bit",
-      "kwargs": ""
+      "unet_name": "longcat_image_bf16.safetensors",
+      "weight_dtype": "fp8_e4m3fn"
     },
-    "class_type": "HFDLoadPipeline",
+    "class_type": "UNETLoader",
     "_meta": {
-      "title": "HF Diffusers load pipeline"
+      "title": "Load Diffusion Model"
     }
   },
-  "16": {
+  "5": {
     "inputs": {
-      "prompt": "@POSITIVE@",
-      "negative_prompt": "",
       "width": 1152,
       "height": 896,
-      "seed": 1,
-      "num_inference_steps": 20,
-      "output_type": "pil",
-      "kwargs": "{\"guidance_scale\": 4}",
-      "pipeline": [
-        "15",
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage",
+    "_meta": {
+      "title": "EmptySD3LatentImage"
+    }
+  },
+  "6": {
+    "inputs": {
+      "text": "@POSITIVE@",
+      "clip": [
+        "100",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "7": {
+    "inputs": {
+      "text": "@NEGATIVE@",
+      "clip": [
+        "100",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "8": {
+    "inputs": {
+      "samples": [
+        "10",
         0
       ],
-      "negative_prompt_embeds": [
-        "19",
+      "vae": [
+        "11",
         0
       ]
     },
-    "class_type": "HFDRunPipeline",
+    "class_type": "VAEDecode",
     "_meta": {
-      "title": "HF Diffusers run pipeline"
+      "title": "VAE Decode"
     }
   },
-  "17": {
+  "10": {
     "inputs": {
-      "images": [
-        "16",
+      "noise_seed": 1,
+      "steps": 20,
+      "cfg": 4,
+      "sampler_name": "euler",
+      "scheduler": "beta",
+      "start_at_step": 0,
+      "end_at_step": 10000,
+      "var_seed": 0,
+      "var_seed_strength": 0,
+      "sigma_max": -1,
+      "sigma_min": -1,
+      "rho": 7,
+      "add_noise": "enable",
+      "return_with_leftover_noise": "disable",
+      "previews": "default",
+      "tile_sample": false,
+      "tile_size": 1024,
+      "model": [
+        "4",
+        0
+      ],
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "7",
+        0
+      ],
+      "latent_image": [
+        "5",
         0
       ]
     },
-    "class_type": "PILToImage",
+    "class_type": "SwarmKSampler",
     "_meta": {
-      "title": "PIL To Image"
+      "title": "SwarmKSampler"
     }
   },
-  "18": {
+  "11": {
+    "inputs": {
+      "vae_name": "Flux/ae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "Load VAE"
+    }
+  },
+  "100": {
+    "inputs": {
+      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "type": "longcat_image",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "101": {
     "inputs": {
       "filename_prefix": "ComfyUI",
       "images": [
-        "17",
+        "8",
         0
       ]
     },
     "class_type": "SaveImage",
     "_meta": {
       "title": "Save Image"
-    }
-  },
-  "19": {
-    "inputs": {
-      "prompt": "@NEGATIVE@",
-      "kwargs": "",
-      "pipeline": [
-        "15",
-        0
-      ]
-    },
-    "class_type": "HFDEncodePrompt",
-    "_meta": {
-      "title": "HF Diffusers encode prompt"
     }
   }
 }

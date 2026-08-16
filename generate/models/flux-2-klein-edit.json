@@ -1,0 +1,9 @@
+{
+    "generator": "edit",
+    "latents": true,
+    "input": ["139", "2"],
+    "output": ["136", "140", "4"],
+    "seed": ["124", "124"],
+    "prompt": "132",
+    "negative": "132"
+}

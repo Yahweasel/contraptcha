@@ -27,7 +27,7 @@ declare let YALAP: any;
 
     const imageCt = 4;
     const wordCt = 6;
-    const videoModels = {"wan-2.2": 1, "ltx-2": 1};
+    const videoModels = {"wan-2.2": 1, "ltx-2": 1, "ltx-2.5": 1};
 
     // Get all our references
     const mainBox = gebi("main");
@@ -272,7 +272,7 @@ declare let YALAP: any;
         if (seed < 0 && opts.daily) {
             try {
                 seed = await loadJSON(
-                    "assets/daily.json?t=" +
+                    "assets/daily.json?v=1&t=" +
                     Math.floor(new Date().getTime() / 3600000 /* one hour */)
                 );
                 await loadState();
@@ -1081,33 +1081,40 @@ declare let YALAP: any;
             if (i === credits.length - 1)
                 html += "and ";
             switch (cr) {
+                // Image
+                case "mage-flow":
+                    html += '<a href="https://huggingface.co/Comfy-Org/Mage-Flow">Mage-Flow</a>';
+                    break;
+                case "boogu":
+                    html += '<a href="https://huggingface.co/Boogu/Boogu-Image-0.1-Turbo">Boogu-Image-0.1</a>';
+                    break;
+                case "omnigen2":
+                    html += '<a href="https://huggingface.co/OmniGen2/OmniGen2">OmniGen2</a>';
+                    break;
+                case "microsoft-lens-turbo":
+                    html += '<a href="https://huggingface.co/Comfy-Org/Lens">Microsoft Lens Turbo</a>';
+                    break;
+                case "hidream-o1-dev":
+                    html += '<a href="https://huggingface.co/HiDream-ai/HiDream-O1-Image-Dev">HiDream-O1-Image Dev</a>';
+                    break;
+                case "ernie-image-turbo":
+                    html += '<a href="https://huggingface.co/baidu/ERNIE-Image-Turbo">ERNIE-Image-Turbo</a>';
+                    break;
                 case "flux2klein":
                     html += '<a href="https://huggingface.co/black-forest-labs/FLUX.2-klein-4B">FLUX.2 Klein 4B</a>';
-                    break;
-                case "z-image-turbo":
-                    html += '<a href="https://huggingface.co/Tongyi-MAI/Z-Image-Turbo">Z-Image Turbo</a>';
-                    break;
-                case "longcat-image":
-                    html += '<a href="https://huggingface.co/meituan-longcat/LongCat-Image">LongCat Image</a>';
-                    break;
-                case "ltx-2":
-                    html += '<a href="https://huggingface.co/Lightricks/LTX-2">LTX-2 distilled</a>';
-                    break;
-                case "hunyuan-image-2.1":
-                    html += '<a href="https://huggingface.co/tencent/HunyuanImage-2.1">HunyuanImage 2.1</a>';
                     break;
                 case "qwen-image-2512":
                 case "qwen-image":
                     html += '<a href="https://huggingface.co/Qwen/Qwen-Image">Qwen-Image</a> with <a href="https://huggingface.co/lightx2v/Qwen-Image-Lightning">Qwen-Image-Lightning</a>';
                     break;
-                case "wan-2.2":
-                    html += '<a href="https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B">Wan2.2</a> with <a href="https://huggingface.co/lightx2v/Wan2.2-Lightning">Wan2.2-Lightning</a>';
+                case "longcat-image":
+                    html += '<a href="https://huggingface.co/meituan-longcat/LongCat-Image">LongCat Image</a>';
                     break;
-                case "infinity-8b":
-                    html += '<a href="https://huggingface.co/FoundationVision/Infinity">Infinity 8B-512x512</a>';
+                case "ovis-image":
+                    html += '<a href="https://huggingface.co/ATH-MaaS/Ovis-Image-7B">Ovis-Image</a>';
                     break;
-                case "hidream-i1-fast":
-                    html += '<a href="https://huggingface.co/HiDream-ai/HiDream-I1-Fast">HiDream-I1 Fast</a>';
+                case "z-image-turbo":
+                    html += '<a href="https://huggingface.co/Tongyi-MAI/Z-Image-Turbo">Z-Image Turbo</a>';
                     break;
                 case "lumina-2":
                     html += '<a href="https://huggingface.co/Alpha-VLLM/Lumina-Image-2.0">Lumina-Image-2.0</a>';
@@ -1115,17 +1122,42 @@ declare let YALAP: any;
                 case "shuttle-jaguar":
                     html += '<a href="https://civitai.com/models/1167909/shuttle-jaguar">Shuttle Jaguar</a>';
                     break;
+                case "juggernautxl11":
+                    html += '<a href="https://civitai.com/models/133005?modelVersionId=782002">Juggernaut XL</a>';
+                    break;
                 case "auraflow-0.3":
                     html += '<a href="https://huggingface.co/fal/AuraFlow-v0.3">AuraFlow v0.3</a>';
+                    break;
+                case "sdxl":
+                    html += '<a href="https://stability.ai/stable-image">Stable Diffusion XL</a>';
+                    break;
+
+                // Video
+                case "ltx-2.5":
+                    html += '<a href="https://huggingface.co/Lightricks/LTX-2.5">LTX-2.5</a>';
+                    break;
+                case "wan-2.2":
+                    html += '<a href="https://huggingface.co/Wan-AI/Wan2.2-T2V-A14B">Wan2.2</a> with <a href="https://huggingface.co/lightx2v/Wan2.2-Lightning">Wan2.2-Lightning</a>';
+                    break;
+
+                // Obsolete
+                case "ltx-2":
+                    html += '<a href="https://huggingface.co/Lightricks/LTX-2">LTX-2 distilled</a>';
+                    break;
+                case "hunyuan-image-2.1":
+                    html += '<a href="https://huggingface.co/tencent/HunyuanImage-2.1">HunyuanImage 2.1</a>';
+                    break;
+                case "infinity-8b":
+                    html += '<a href="https://huggingface.co/FoundationVision/Infinity">Infinity 8B-512x512</a>';
+                    break;
+                case "hidream-i1-fast":
+                    html += '<a href="https://huggingface.co/HiDream-ai/HiDream-I1-Fast">HiDream-I1 Fast</a>';
                     break;
                 case "shuttle3":
                     html += '<a href="https://civitai.com/models/943001?modelVersionId=1055701">Shuttle 3 Diffusion</a>';
                     break;
                 case "pixelwave3schnell":
                     html += '<a href="https://civitai.com/models/141592?modelVersionId=1002647">PixelWave</a>';
-                    break;
-                case "juggernautxl11":
-                    html += '<a href="https://civitai.com/models/133005?modelVersionId=782002">Juggernaut XL</a>';
                     break;
                 case "juggernautxl8":
                     html += '<a href="https://civitai.com/models/133005?modelVersionId=288982">Juggernaut XL</a>';
@@ -1138,9 +1170,6 @@ declare let YALAP: any;
                     break;
                 case "flux1schnell":
                     html += '<a href="https://huggingface.co/black-forest-labs/FLUX.1-schnell">FLUX.1 Schnell</a>';
-                    break;
-                case "sdxl":
-                    html += '<a href="https://stability.ai/stable-image">Stable Diffusion XL</a>';
                     break;
 
                 // Hard mode

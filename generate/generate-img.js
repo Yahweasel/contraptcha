@@ -17,11 +17,13 @@
 const cproc = require("child_process");
 const fs = require("fs/promises");
 
+let unloadAllModels = null;
+
 /**
  * Send this prompt to the AI.
  */
 async function sendPrompt(backend, prompt) {
-    const timeout = Date.now() + 600000;
+    const timeout = Date.now() + 1800000;
     for (let tries = 0; tries < 3; tries++) {
         try {
             const f = await fetch(`${backend}/prompt`, {
@@ -54,6 +56,7 @@ async function sendPrompt(backend, prompt) {
  * Clear ComfyUI's cache.
  */
 async function clearCache(backend, _ /* step */) {
+    // Unload the models using the `free` backend
     try {
         const f = await fetch(`${backend}/free`, {
             method: "POST",
@@ -65,6 +68,14 @@ async function clearCache(backend, _ /* step */) {
         });
         await f.text();
     } catch (ex) {}
+
+    // Then use the Run JavaScript node to *really* clear it
+    if (!unloadAllModels) {
+        unloadAllModels = JSON.parse(
+            await fs.readFile("models/workflows/unload-all-models.json", "utf8")
+        );
+    }
+    await sendPrompt(backend, unloadAllModels);
 }
 
 /**
@@ -89,7 +100,7 @@ function run(cmd) {
  */
 function setText(obj, from, to) {
     obj = obj.inputs;
-    for (const part of ["prompt", "text", "text_g", "text_l"]) {
+    for (const part of ["prompt", "negative_prompt", "text", "text_g", "text_l"]) {
         if (obj[part])
             obj[part] = obj[part].replace(from, to);
     }

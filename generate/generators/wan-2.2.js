@@ -39,6 +39,7 @@ async function generate(opts) {
             break;
 
         case 1: // low noise model
+            await fs.access(`${oname}_00001_.latent`);
             w[prompt.input[0]].inputs.latent = `${oname}_00001_.latent`;
             w[prompt.output[1]].inputs.filename_prefix = oname;
             w[prompt.seed[1]].inputs.noise_seed = seed;
@@ -47,6 +48,7 @@ async function generate(opts) {
             break;
 
         default: // 2, VAE decode
+            await fs.access(`${oname}_00002_.latent`);
             w[prompt.input[1]].inputs.latent = `${oname}_00002_.latent`;
             w[prompt.output[2]].inputs.filename_prefix = oname;
     }

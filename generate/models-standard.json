@@ -1,22 +1,22 @@
+
 [
+    "mage-flow",
+    "boogu",
+    "omnigen2",
+    "microsoft-lens-turbo",
+    "hidream-o1-dev",
+    "ernie-image-turbo",
     "flux2klein",
-    "z-image-turbo",
     "qwen-image-2512",
     "longcat-image",
-    "//qwen-image",
-    "//infinity-8b",
-    "hidream-i1-fast",
+    "ovis-image",
+    "z-image-turbo",
     "lumina-2",
     "shuttle-jaguar",
-    "auraflow-0.3",
-    "//shuttle3",
-    "//--pixelwave3schnell",
-    "flux1schnell",
     "juggernautxl11",
-    "//--realvisxl3.0turbo",
-    "//--dreamshaperxlsfwturbo",
+    "auraflow-0.3",
     "sdxl",
 
-    "ltx-2",
+    "ltx-2.5",
     "wan-2.2"
 ]

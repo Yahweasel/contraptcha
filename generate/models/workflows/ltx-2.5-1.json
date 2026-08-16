@@ -1,0 +1,39 @@
+{
+  "1": {
+    "inputs": {
+      "clip_name": "gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors",
+      "type": "ltxv",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "Load CLIP"
+    }
+  },
+  "2": {
+    "inputs": {
+      "text": "@POSITIVE@",
+      "clip": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+    }
+  },
+  "3": {
+    "inputs": {
+      "filename": "condition_tensor",
+      "condition": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "SaveCondition",
+    "_meta": {
+      "title": "Save Condition"
+    }
+  }
+}

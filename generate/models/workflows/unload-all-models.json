@@ -1,0 +1,29 @@
+{
+  "1": {
+    "inputs": {
+      "raw_code": [
+        "2",
+        0
+      ],
+      "number1": 0,
+      "number2": 0,
+      "text1": "hello",
+      "text2": "world",
+      "verbose": true,
+      "czffe37": ""
+    },
+    "class_type": "Exec Python Code Script",
+    "_meta": {
+      "title": "Python Interpreter"
+    }
+  },
+  "2": {
+    "inputs": {
+      "value": "import comfy.model_management as mm\nmm.unload_all_models()"
+    },
+    "class_type": "PrimitiveStringMultiline",
+    "_meta": {
+      "title": "Input Text"
+    }
+  }
+}

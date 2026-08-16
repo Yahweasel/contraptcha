@@ -40,11 +40,13 @@ async function generate(opts) {
             break;
 
         case 1: // VAE-to-VAE
+            await fs.access(`${oname}_00001_.latent`);
             w[prompt.input[0]].inputs.latent = `${oname}_00001_.latent`;
             w[prompt.output[1]].inputs.filename_prefix = oname;
             break;
 
         case 2: // refine
+            await fs.access(`${oname}_00002_.latent`);
             w[prompt.input[1]].inputs.latent = `${oname}_00002_.latent`;
             w[prompt.output[2]].inputs.filename_prefix = oname;
             w[prompt.seed[1]].inputs.noise_seed =
@@ -54,6 +56,7 @@ async function generate(opts) {
             break;
 
         default: // 3, VAE decode
+            await fs.access(`${oname}_00003_.latent`);
             w[prompt.input[2]].inputs.latent = `${oname}_00003_.latent`;
             w[prompt.output[3]].inputs.filename_prefix = oname;
             break;

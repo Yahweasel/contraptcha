@@ -1,0 +1,61 @@
+{
+  "1": {
+    "inputs": {
+      "pipeline_class": "ErnieImagePipeline",
+      "model": "Baidu/ERNIE-Image-Turbo",
+      "device": "default",
+      "enable_model_cpu_offload": false,
+      "dtype": "bitsandbytes_4bit",
+      "kwargs": ""
+    },
+    "class_type": "HFDLoadPipeline",
+    "_meta": {
+      "title": "HF Diffusers load pipeline"
+    }
+  },
+  "2": {
+    "inputs": {
+      "prompt": "@POSITIVE@",
+      "negative_prompt": "",
+      "width": 1152,
+      "height": 896,
+      "seed": 1,
+      "num_inference_steps": 8,
+      "output_type": "pil",
+      "kwargs": "{\"guidance_scale\": 1.0}",
+      "pipeline": [
+        "1",
+        0
+      ]
+    },
+    "class_type": "HFDRunPipeline",
+    "_meta": {
+      "title": "HF Diffusers run pipeline"
+    }
+  },
+  "3": {
+    "inputs": {
+      "images": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "PILToImage",
+    "_meta": {
+      "title": "PIL To Image"
+    }
+  },
+  "4": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "3",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}

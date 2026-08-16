@@ -1,0 +1,8 @@
+{
+    "generator": "separate-latents",
+    "input": "4",
+    "output": ["7", "3"],
+    "seed": "6",
+    "prompt": "4",
+    "negative": "4"
+}

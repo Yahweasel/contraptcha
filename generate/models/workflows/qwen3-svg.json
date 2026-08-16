@@ -1,0 +1,71 @@
+{
+  "1": {
+    "inputs": {
+      "model_path": "Qwen3-30B-A3B-Instruct-2507-UD-Q4_K_XL.gguf",
+      "seed": 1,
+      "n_gpu_layers": -1,
+      "split_mode": "LLAMA_SPLIT_MODE_NONE",
+      "main_gpu": 0,
+      "n_ctx": 65536,
+      "kwargs": "{\"swa_full\": true, \"flash_attn\": true, \"type_k\": 8, \"type_v\": 8}"
+    },
+    "class_type": "YALlamaLoadModel",
+    "_meta": {
+      "title": "YALlama load model"
+    }
+  },
+  "2": {
+    "inputs": {
+      "role": "user",
+      "text": "Create an SVG drawing of “@POSITIVE@”. Don't write the words, draw the things. The drawing should have an aspect ratio of 9:7 (1152x896 pixels)."
+    },
+    "class_type": "YALlamaCreateConversation",
+    "_meta": {
+      "title": "YALlama create conversation"
+    }
+  },
+  "3": {
+    "inputs": {
+      "seed": 1,
+      "kwargs": "",
+      "model": [
+        "1",
+        0
+      ],
+      "messages": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "YALlamaChatCompletion",
+    "_meta": {
+      "title": "YALlama chat completion"
+    }
+  },
+  "4": {
+    "inputs": {
+      "index": -1,
+      "conversation": [
+        "3",
+        1
+      ]
+    },
+    "class_type": "YALlamaUnpackConversation",
+    "_meta": {
+      "title": "YALlama unpack conversation"
+    }
+  },
+  "5": {
+    "inputs": {
+      "text": [
+        "4",
+        1
+      ],
+      "filename": "ComfyUI"
+    },
+    "class_type": "SaveTextFile",
+    "_meta": {
+      "title": "Save text file"
+    }
+  }
+}

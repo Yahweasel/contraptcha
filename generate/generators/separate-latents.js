@@ -37,6 +37,7 @@ async function generate(opts) {
         genImg.setText(w[prompt.prompt], "@POSITIVE@", positive);
         genImg.setText(w[prompt.negative], "@NEGATIVE@", negative);
     } else {
+        await fs.access(`${oname}_00001_.latent`);
         w[prompt.input].inputs.latent = `${oname}_00001_.latent`;
         w[prompt.output[1]].inputs.filename_prefix = oname;
     }

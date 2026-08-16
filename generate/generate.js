@@ -35,6 +35,7 @@ async function main(args) {
     let outFile = null;
     let words = [];
     let seed = -1;
+    let testRun = false;
 
     for (let ai = 0; ai < args.length; ai++) {
         const arg = args[ai];
@@ -48,6 +49,8 @@ async function main(args) {
             words = JSON.parse(await fs.readFile(args[++ai], "utf8"));
         } else if (arg === "-o") {
             outFile = args[++ai];
+        } else if (arg === "--test") {
+            testRun = true;
         } else if (arg[0] === "-") {
             process.exit(1);
         } else {
@@ -86,8 +89,10 @@ async function main(args) {
     } catch (ex) {}
     if (models === null) {
         models = allModels.filter(x => !x.startsWith("//"));
-        while (models.length > numModels)
-            models.splice(~~(Math.random() * models.length), 1);
+        if (!testRun) {
+            while (models.length > numModels)
+                models.splice(~~(Math.random() * models.length), 1);
+        }
     }
 
     // Set up the directory
@@ -131,6 +136,9 @@ async function main(args) {
                     step,
                     prompt
                 });
+
+                if (testRun)
+                    break;
             }
         }
     }

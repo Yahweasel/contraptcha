@@ -1,0 +1,11 @@
+{
+    "//custom_nodes": [
+        "https://github.com/Yahweasel/ComfyUI-YALlama",
+        "https://github.com/Yahweasel/ComfyUI-Save-Text"
+    ],
+    "generator": "llamacpp-svg",
+    "output": "5",
+    "seed": "3",
+    "prompt": "2",
+    "negative": "2"
+}
