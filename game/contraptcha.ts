@@ -62,6 +62,9 @@ declare let YALAP: any;
 
     let adTargets: string[] | null = null;
 
+    const randoms = [];
+    let rng = null;
+
     let mainPromise: Promise<unknown> = Promise.all([]);
 
     // Create an image for each imgBox
@@ -765,41 +768,46 @@ declare let YALAP: any;
      */
     async function hint() {
         // Choose the word to hint in
-        let wi: number;
+        let wi = 0;
         if (lastGuess) {
             // Simple: most recent word
             wi = lastGuess[0];
 
-        } else {
-            // An unguessed word
-            const unguessed = [];
-            for (let ui = 0; ui < wordCt; ui++) {
-                if (!state.guessed[ui])
-                    unguessed.push(ui);
-            }
-            if (!unguessed.length)
-                return;
-            wi = unguessed[Math.floor(Math.random() * unguessed.length)];
         }
 
         // Get the hint file
         if (!hintFiles[wi])
             hintFiles[wi] = await loadJSON(`assets/${seed}/w${wi}-top.json.xz`, {xz: true});
+        let hintWords = Object.keys(hintFiles[wi]);
+
+        // Get enough pseudo-randoms to choose a word
+        if (randoms.length <= hintWords.length) {
+            if (!rng)
+                rng = new (<any> Math).seedrandom("Contraptcha");
+            while (randoms.length <= hintWords.length)
+                randoms.push(rng())
+        }
 
         // Choose a random word to use as hint
-        let hintWords = Object.keys(hintFiles[wi]);
         let hintWord = "";
         let hintValue: number;
         while (true) {
-            if (!hintWords.length)
+            if (!hintWords.length) {
+                hintWord = "";
                 break;
-            const idx = Math.floor(Math.random() * hintWords.length);
+            }
+            const rand = randoms[hintWords.length];
+            const idx = Math.floor(
+                (1-rand*rand) * hintWords.length
+            );
             hintWord = hintWords[idx];
             hintValue = hintFiles[wi][hintWord];
-            if (state.guessWords[hintWord]) {
-                hintWords.splice(idx, 1);
-                delete hintFiles[wi][hintWord];
-            } else break;
+
+            hintWords.splice(idx, 1);
+            delete hintFiles[wi][hintWord];
+
+            if (!state.guessWords[wi][hintWord])
+                break;
         }
         if (!hintWord) {
             message("I've run out of hint words :(");

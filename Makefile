@@ -6,6 +6,7 @@ YALAP_VERSION=1.0.2
 all: \
 	semantic-distance/distance \
 	game/contraptcha.js \
+	game/assets/libs/seedrandom.min.js \
 	game/assets/libs/yalap-$(YALAP_VERSION)-unxz.js
 
 semantic-distance/distance: semantic-distance/distance.c
@@ -13,6 +14,10 @@ semantic-distance/distance: semantic-distance/distance.c
 
 game/%.js: game/%.ts node_modules/.bin/tsc
 	./node_modules/.bin/tsc --lib es2015,dom $<
+
+game/assets/libs/seedrandom.min.js: node_modules/.bin/tsc
+	mkdir -p game/assets/libs
+	cp node_modules/seedrandom/seedrandom.min.js $@
 
 game/assets/libs/yalap-$(YALAP_VERSION)-unxz.js: node_modules/.bin/tsc
 	mkdir -p game/assets/libs
